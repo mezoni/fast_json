@@ -181,7 +181,7 @@ const _keyValue = Named(
         _colon,
         _value,
         ExpressionAction<MapEntry<String, dynamic>>(
-            ['k', 'v'], '_handleEndKey(state, {{k}})')));
+            ['k', 'v'], '_handleEndKey(state, {{k}} as String)')));
 
 const _keyValues = Named('_keyValues', SeparatedList0(_keyValue, _comma));
 

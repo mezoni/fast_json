@@ -38,7 +38,7 @@ void main(List<String> args) {
       case JsonEvent.beginKey:
         // This is a transitive event
         // Only for in order to calculate the current path.
-        keys.add(value);
+        keys.add(value as String);
         path = keys.join('.');
         break;
       case JsonEvent.endKey:
@@ -47,7 +47,7 @@ void main(List<String> args) {
         if (path == 'address.city') {
           if (cities.contains(lastValue)) {
             final user = buffer[buffer.length - 2];
-            users.add(user);
+            users.add(user as Map<String, dynamic>);
           }
         }
 
@@ -70,7 +70,8 @@ void main(List<String> args) {
   }
 }
 
-const _posts = '''
+const _posts =
+    '''
 [
   {
     "id": 1,

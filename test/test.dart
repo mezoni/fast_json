@@ -10,7 +10,8 @@ void main(List<String> args) {
   _testStraem();
 }
 
-const _posts = '''
+const _posts =
+    '''
 [
   {
     "id": 1,
@@ -251,6 +252,7 @@ _testStraem() async {
       final matcher = {
         'list': [1, 2],
         'map': {'bool': true},
+        'string': '1\\u00202'
       };
       final source = jsonEncode(matcher);
       parser.parse(source, handler);
@@ -261,7 +263,7 @@ _testStraem() async {
       final matcher = [
         1,
         {
-          'list': ['Hello']
+          'list': ['Hello\\n']
         },
         null
       ];
@@ -303,7 +305,7 @@ _testStraem() async {
             buffer.last.add(lastValue);
             break;
           case JsonEvent.beginKey:
-            keys.add(value);
+            keys.add(value as String);
             path = keys.join('.');
             break;
           case JsonEvent.endKey:
@@ -311,7 +313,7 @@ _testStraem() async {
             if (path == 'address.city') {
               if (cities.contains(lastValue)) {
                 final user = buffer[buffer.length - 2];
-                users.add(user);
+                users.add(user as Map<String, dynamic>);
               }
             }
 

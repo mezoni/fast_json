@@ -761,7 +761,7 @@ MapEntry<String, dynamic>? _keyValue(State<String> state) {
       if (state.ok) {
         final v1 = $1;
         final v2 = $3;
-        $0 = _handleEndKey(state, v1);
+        $0 = _handleEndKey(state, v1 as String);
       }
     }
   }
