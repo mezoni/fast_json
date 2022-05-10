@@ -10,8 +10,7 @@ void main(List<String> args) {
   _testStraem();
 }
 
-const _posts =
-    '''
+const _posts = '''
 [
   {
     "id": 1,
