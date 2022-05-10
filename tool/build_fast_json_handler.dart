@@ -176,8 +176,7 @@ const _json = Named<String, dynamic>('_json', Delimited(_ws, _value, _eof));
 const _keyValue = Named(
     '_keyValue',
     Map3(
-        Handle(
-            _string, ExpressionAction(['x'], '_handleBeginKey(state, {{x}})')),
+        Map1(_string, ExpressionAction(['x'], '_handleBeginKey(state, {{x}})')),
         _colon,
         _value,
         ExpressionAction<MapEntry<String, dynamic>>(

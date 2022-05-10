@@ -9,46 +9,42 @@ void main(List<String> args) {
   dynamic lastValue;
   final keys = <String>[];
   var path = '';
-  // This is a request criteria
-  final cities = ['McKenziehaven', 'Wisokyburgh'];
-  // Set<Map> of founds users
-  final users = <Map<String, dynamic>>{};
+  // This is a search criteria
+  final cities = {'McKenziehaven', 'Wisokyburgh'};
+  var isSatisfies = false;
+  var level = 0;
   void handle(parser.JsonEvent event, dynamic value) {
     switch (event) {
       case JsonEvent.beginArray:
-        // Place to pre handle arrays
         buffer.add([]);
         break;
       case JsonEvent.beginObject:
-        // Place to pre handle objects
+        level++;
         buffer.add(<String, dynamic>{});
         break;
       case JsonEvent.endArray:
-        // Place to post handle arrays
         lastValue = buffer.removeLast();
         break;
       case JsonEvent.endObject:
-        // Place to post handle objects
+        level--;
         lastValue = buffer.removeLast();
         break;
       case JsonEvent.element:
-        // Place to handle array elements
-        buffer.last.add(lastValue);
+        if (level > 0) {
+          buffer.last.add(lastValue);
+        } else if (isSatisfies) {
+          buffer.last.add(lastValue);
+        }
+
         break;
       case JsonEvent.beginKey:
-        // This is a transitive event
-        // Only for in order to calculate the current path.
         keys.add(value as String);
         path = keys.join('.');
         break;
       case JsonEvent.endKey:
-        // Place to handle object properties
         buffer.last[value] = lastValue;
         if (path == 'address.city') {
-          if (cities.contains(lastValue)) {
-            final user = buffer[buffer.length - 2];
-            users.add(user as Map<String, dynamic>);
-          }
+          isSatisfies = cities.contains(lastValue);
         }
 
         keys.removeLast();
@@ -63,6 +59,7 @@ void main(List<String> args) {
 
   final handler = _JsonParserHandler(handle);
   parser.parse(_posts, handler);
+  final users = (lastValue as List).cast<Map<String, dynamic>>();
   print('Search criteria: cities ${cities.join(', ')}');
   print('Found ${users.length} user(s)');
   for (final user in users) {
@@ -70,8 +67,7 @@ void main(List<String> args) {
   }
 }
 
-const _posts =
-    '''
+const _posts = '''
 [
   {
     "id": 1,
