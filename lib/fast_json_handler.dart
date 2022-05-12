@@ -33,7 +33,8 @@ dynamic _handleEndArray(State<String> state) =>
     _h(state, JsonEvent.endArray, null, null);
 
 @pragma('vm:prefer-inline')
-MapEntry<String, dynamic> _handleEndKey(State<String> state, String key) =>
+MapEntry<String, dynamic> _handleEndKey(
+        State<String> state, String key, dynamic value) =>
     _h(state, JsonEvent.endKey, key, const MapEntry('', null));
 
 @pragma('vm:prefer-inline')
@@ -77,9 +78,6 @@ int _toHexValue(String s) {
 
 @pragma('vm:prefer-inline')
 T _toValue<T>(dynamic unused, T value) => value;
-
-@pragma('vm:prefer-inline')
-T _unused<T>(T value) => value;
 
 void _ws(State<String> state) {
   final source = state.source;
@@ -623,21 +621,31 @@ void _openBracket(State<String> state) {
 dynamic _values(State<String> state) {
   dynamic $0;
   final source = state.source;
-  void $1;
-  var $pos = state.pos;
+  final $pos = state.pos;
+  var $pos1 = state.pos;
   while (true) {
-    dynamic $2;
-    $2 = _value(state);
+    final $pos2 = state.pos;
+    _value(state);
     if (state.ok) {
-      final v = $2;
-      _handleElement(state);
+      // ignore: unused_local_variable
+      dynamic $1;
+      state.ok = true;
+      if (state.ok) {
+        $1 = _handleElement(state);
+      }
+      if (state.ok) {
+        //
+      }
     }
     if (!state.ok) {
-      state.pos = $pos;
+      state.pos = $pos2;
+    }
+    if (!state.ok) {
+      state.pos = $pos1;
       break;
     }
-    $pos = state.pos;
-    final $pos1 = state.pos;
+    $pos1 = state.pos;
+    final $pos3 = state.pos;
     state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 44;
     if (state.ok) {
       state.pos += 1;
@@ -648,7 +656,7 @@ dynamic _values(State<String> state) {
       _ws(state);
     }
     if (!state.ok) {
-      state.pos = $pos1;
+      state.pos = $pos3;
     }
     if (!state.ok) {
       break;
@@ -656,8 +664,18 @@ dynamic _values(State<String> state) {
   }
   state.ok = true;
   if (state.ok) {
-    final v = $1;
-    $0 = null;
+    // ignore: unused_local_variable
+    dynamic $2;
+    state.ok = true;
+    if (state.ok) {
+      $2 = null;
+    }
+    if (state.ok) {
+      //
+    }
+  }
+  if (!state.ok) {
+    state.pos = $pos;
   }
   return $0;
 }
@@ -683,25 +701,45 @@ void _closeBracket(State<String> state) {
 dynamic _array(State<String> state) {
   dynamic $0;
   final $pos = state.pos;
-  void $1;
-  $1 = _openBracket(state);
+  final $pos1 = state.pos;
+  _openBracket(state);
   if (state.ok) {
-    final v = $1;
-    _handleBeginArray(state);
+    // ignore: unused_local_variable
+    dynamic $1;
+    state.ok = true;
+    if (state.ok) {
+      $1 = _handleBeginArray(state);
+    }
+    if (state.ok) {
+      //
+    }
+  }
+  if (!state.ok) {
+    state.pos = $pos1;
   }
   if (state.ok) {
     dynamic $2;
     $2 = _values(state);
     if (state.ok) {
       final v = $2;
-      $0 = _unused(const []);
+      $0 = _toValue(v, const []);
     }
     if (state.ok) {
-      void $3;
-      $3 = _closeBracket(state);
+      final $pos2 = state.pos;
+      _closeBracket(state);
       if (state.ok) {
-        final v = $3;
-        _handleEndArray(state);
+        // ignore: unused_local_variable
+        dynamic $3;
+        state.ok = true;
+        if (state.ok) {
+          $3 = _handleEndArray(state);
+        }
+        if (state.ok) {
+          //
+        }
+      }
+      if (!state.ok) {
+        state.pos = $pos2;
       }
     }
   }
@@ -761,7 +799,7 @@ MapEntry<String, dynamic>? _keyValue(State<String> state) {
       if (state.ok) {
         final v1 = $1;
         final v2 = $3;
-        $0 = _handleEndKey(state, v1 as String);
+        $0 = _handleEndKey(state, v1 as String, v2);
       }
     }
   }
@@ -830,25 +868,45 @@ void _closeBrace(State<String> state) {
 dynamic _object(State<String> state) {
   dynamic $0;
   final $pos = state.pos;
-  void $1;
-  $1 = _openBrace(state);
+  final $pos1 = state.pos;
+  _openBrace(state);
   if (state.ok) {
-    final v = $1;
-    _handleBeginObject(state);
+    // ignore: unused_local_variable
+    dynamic $1;
+    state.ok = true;
+    if (state.ok) {
+      $1 = _handleBeginObject(state);
+    }
+    if (state.ok) {
+      //
+    }
+  }
+  if (!state.ok) {
+    state.pos = $pos1;
   }
   if (state.ok) {
     List<MapEntry<String, dynamic>>? $2;
     $2 = _keyValues(state);
     if (state.ok) {
-      void $3;
-      $3 = _closeBrace(state);
+      final $pos2 = state.pos;
+      _closeBrace(state);
       if (state.ok) {
-        final v = $3;
-        _handleEndObject(state);
+        // ignore: unused_local_variable
+        dynamic $3;
+        state.ok = true;
+        if (state.ok) {
+          $3 = _handleEndObject(state);
+        }
+        if (state.ok) {
+          //
+        }
+      }
+      if (!state.ok) {
+        state.pos = $pos2;
       }
       if (state.ok) {
         final v1 = $2!;
-        $0 = _unused(const {});
+        $0 = _toValue(v1, const {});
       }
     }
   }

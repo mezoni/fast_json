@@ -1,5 +1,5 @@
 name: fast_json
-version: 0.1.1
+version: 0.1.2
 description: Collection of JSON parsers. Classic parser, event-based parser. Pretty quick parsing.
 repository: https://github.com/mezoni/fast_json
 environment:
@@ -9,6 +9,5 @@ dependencies:
   tuple: ^2.0.0
 dev_dependencies:
   lints: ^1.0.1
-  #parser_builder: ^2.0.10
-  parser_builder: {path: ../parser_builder}
+  parser_builder: ^2.0.10
   test: ^1.20.1

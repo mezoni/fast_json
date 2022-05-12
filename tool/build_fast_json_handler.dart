@@ -71,7 +71,8 @@ dynamic _handleEndArray(State<String> state) =>
     _h(state, JsonEvent.endArray, null, null);
 
 @pragma('vm:prefer-inline')
-MapEntry<String, dynamic> _handleEndKey(State<String> state, String key) =>
+MapEntry<String, dynamic> _handleEndKey(
+        State<String> state, String key, dynamic value) =>
     _h(state, JsonEvent.endKey, key, const MapEntry('', null));
 
 @pragma('vm:prefer-inline')
@@ -116,17 +117,16 @@ int _toHexValue(String s) {
 @pragma('vm:prefer-inline')
 T _toValue<T>(dynamic unused, T value) => value;
 
-@pragma('vm:prefer-inline')
-T _unused<T>(T value) => value;
-
 ''';
 
 const _array = Named(
     '_array',
     Delimited(
-      Handle(_openBracket, ExpressionAction(['x'], '_handleBeginArray(state)')),
-      Map1(_values, ExpressionAction(['x'], '_unused(const [])')),
-      Handle(_closeBracket, ExpressionAction(['x'], '_handleEndArray(state)')),
+      _FastHandle(
+          _openBracket, ExpressionAction([], '_handleBeginArray(state)')),
+      Map1(_values, ExpressionAction(['x'], '_toValue({{x}}, const [])')),
+      _FastHandle(
+          _closeBracket, ExpressionAction([], '_handleEndArray(state)')),
     ));
 
 const _closeBrace =
@@ -180,7 +180,7 @@ const _keyValue = Named(
         _colon,
         _value,
         ExpressionAction<MapEntry<String, dynamic>>(
-            ['k', 'v'], '_handleEndKey(state, {{k}} as String)')));
+            ['k', 'v'], '_handleEndKey(state, {{k}} as String, {{v}})')));
 
 const _keyValues = Named('_keyValues', SeparatedList0(_keyValue, _comma));
 
@@ -194,16 +194,11 @@ const _number = Named(
 const _object = Named(
     '_object',
     Map3(
-      Fast(Handle(
-        _openBrace,
-        ExpressionAction(['x'], '_handleBeginObject(state)'),
-      )),
+      _FastHandle(
+          _openBrace, ExpressionAction([], '_handleBeginObject(state)')),
       _keyValues,
-      Fast(Handle(
-        _closeBrace,
-        ExpressionAction(['x'], '_handleEndObject(state)'),
-      )),
-      ExpressionAction(['kv'], '_unused(const {})'),
+      _FastHandle(_closeBrace, ExpressionAction([], '_handleEndObject(state)')),
+      ExpressionAction(['kv'], '_toValue({{kv}}, const {})'),
     ));
 
 const _openBrace =
@@ -253,11 +248,35 @@ const _value_ = Named(
 
 const _values = Named(
     '_values',
-    Handle(
+    _Handle(
       Fast(SeparatedList0(
-          Handle(_value, ExpressionAction(['x'], '_handleElement(state)')),
+          _FastHandle(_value, ExpressionAction([], '_handleElement(state)')),
           _comma)),
-      ExpressionAction(['x'], 'null'),
     ));
 
 const _ws = Named('_ws', SkipWhile(_isWhitespace));
+
+class _FastHandle<I> extends ParserBuilder<I, void> {
+  final SemanticAction<void> handle;
+
+  final ParserBuilder<I, dynamic> parser;
+
+  const _FastHandle(this.parser, this.handle);
+
+  @override
+  String build(Context context, ParserResult? result) {
+    return Fast2(parser, Slow(Calculate(handle))).build(context, result);
+  }
+}
+
+class _Handle<I> extends ParserBuilder<I, dynamic> {
+  final ParserBuilder<I, dynamic> parser;
+
+  const _Handle(this.parser);
+
+  @override
+  String build(Context context, ParserResult? result) {
+    return Fast2(parser, Slow(Calculate(ExpressionAction([], 'null'))))
+        .build(context, result);
+  }
+}
