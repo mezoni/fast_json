@@ -67,8 +67,7 @@ void main(List<String> args) {
   }
 }
 
-const _data =
-    '''
+const _data = '''
 [
   {
     "id": 1,
