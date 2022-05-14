@@ -20,10 +20,10 @@ Future<void> main(List<String> args) async {
 
 const __footer = r'''
 abstract class JsonParserHandler {
-  void handle(JsonEvent event, dynamic value);
+  void handle(JsonHandlerEvent event, dynamic value);
 }
 
-enum JsonEvent {
+enum JsonHandlerEvent {
   element,
   beginArray,
   beginKey,
@@ -52,39 +52,39 @@ dynamic parse(String source, JsonParserHandler handler) {
 
 @pragma('vm:prefer-inline')
 dynamic _handleBeginArray(State<String> state) =>
-    _h(state, JsonEvent.beginArray, null, null);
+    _h(state, JsonHandlerEvent.beginArray, null, null);
 
 @pragma('vm:prefer-inline')
 String _handleBeginKey(State<String> state, String key) =>
-    _h(state, JsonEvent.beginKey, key, key);
+    _h(state, JsonHandlerEvent.beginKey, key, key);
 
 @pragma('vm:prefer-inline')
 dynamic _handleBeginObject(State<String> state) =>
-    _h(state, JsonEvent.beginObject, null, null);
+    _h(state, JsonHandlerEvent.beginObject, null, null);
 
 @pragma('vm:prefer-inline')
 dynamic _handleElement(State<String> state) =>
-    _h(state, JsonEvent.element, null, null);
+    _h(state, JsonHandlerEvent.element, null, null);
 
 @pragma('vm:prefer-inline')
 dynamic _handleEndArray(State<String> state) =>
-    _h(state, JsonEvent.endArray, null, null);
+    _h(state, JsonHandlerEvent.endArray, null, null);
 
 @pragma('vm:prefer-inline')
 MapEntry<String, dynamic> _handleEndKey(
         State<String> state, String key, dynamic value) =>
-    _h(state, JsonEvent.endKey, key, const MapEntry('', null));
+    _h(state, JsonHandlerEvent.endKey, key, const MapEntry('', null));
 
 @pragma('vm:prefer-inline')
 dynamic _handleEndObject(State<String> state) =>
-    _h(state, JsonEvent.endObject, null, null);
+    _h(state, JsonHandlerEvent.endObject, null, null);
 
 @pragma('vm:prefer-inline')
 T _handleValue<T>(State<String> state, T value) =>
-    _h(state, JsonEvent.value, value, value);
+    _h(state, JsonHandlerEvent.value, value, value);
 
 @pragma('vm:prefer-inline')
-T _h<T>(State<String> state, JsonEvent event, dynamic value, T returns,
+T _h<T>(State<String> state, JsonHandlerEvent event, dynamic value, T returns,
     [dynamic unused]) {
   final handler = state.context as JsonParserHandler;
   handler.handle(event, value);

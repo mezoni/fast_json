@@ -1,6 +1,7 @@
 ## 0.1.3
 
 - Implemented and tested `FastJsonSelector`
+- Breaking change. The class `JsonEvent` has been renamed to `JsonHandlerEvent`. This is done to be symmetrical with the new `JsonSelectorEvent` class
 
 ## 0.1.2
 

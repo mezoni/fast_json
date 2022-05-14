@@ -1,13 +1,14 @@
-import 'package:fast_json/fast_json_selector.dart';
+import 'package:fast_json/fast_json_selector.dart' as parser;
+import 'package:fast_json/fast_json_selector.dart' show JsonSelectorEvent;
 
 void main(List<String> args) {
   {
     // Show how levels are organized
-    void handle(FastJsonSelectorEvent event) {
+    void handle(JsonSelectorEvent event) {
       print('${event.levels.length}: ${event.levels.join(' ')}');
     }
 
-    FastJsonSelector().parse(_data, select: handle);
+    parser.parse(_data, select: handle);
   }
 
   {
@@ -15,7 +16,7 @@ void main(List<String> args) {
     final cities = {'McKenziehaven', 'Wisokyburgh'};
     final users = <User>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
+    void select(JsonSelectorEvent event) {
       if (event.levels.length == level) {
         final map = event.lastValue as Map;
         if (cities.contains(map['address']['city'])) {
@@ -28,7 +29,7 @@ void main(List<String> args) {
       }
     }
 
-    FastJsonSelector().parse(_data, select: select);
+    parser.parse(_data, select: select);
     print(users.join(', '));
   }
 
@@ -36,7 +37,7 @@ void main(List<String> args) {
     // Select all websites
     final websites = <String>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
+    void select(JsonSelectorEvent event) {
       if (event.levels.length == level) {
         final map = event.lastValue as Map;
         final website = map['website'] as String;
@@ -46,7 +47,7 @@ void main(List<String> args) {
       }
     }
 
-    FastJsonSelector().parse(_data, select: select);
+    parser.parse(_data, select: select);
     print(websites.join(', '));
   }
 
@@ -54,7 +55,7 @@ void main(List<String> args) {
     // Select all companies
     final companies = <Company>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
+    void select(JsonSelectorEvent event) {
       // 5:  . data [] 0 .
       if (event.levels.length == level) {
         final map = event.lastValue as Map;
@@ -65,7 +66,7 @@ void main(List<String> args) {
       }
     }
 
-    FastJsonSelector().parse(_data, select: select);
+    parser.parse(_data, select: select);
     print(companies.join(', '));
   }
 
@@ -73,7 +74,7 @@ void main(List<String> args) {
     // Select all companies for users from South Elvis
     final companies = <Company>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
+    void select(JsonSelectorEvent event) {
       if (event.levels.length == level) {
         final map = event.lastValue as Map;
         if (map['address']['city'] == 'South Elvis') {
@@ -86,7 +87,7 @@ void main(List<String> args) {
       }
     }
 
-    FastJsonSelector().parse(_data, select: select);
+    parser.parse(_data, select: select);
     print(companies.join(', '));
   }
 
@@ -94,7 +95,7 @@ void main(List<String> args) {
     // Select users [2..4]
     final users = <User>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
+    void select(JsonSelectorEvent event) {
       final levels = event.levels;
       // 5:  . data [] 0 .
       if (levels.length == level) {
@@ -111,7 +112,7 @@ void main(List<String> args) {
       }
     }
 
-    FastJsonSelector().parse(_data, select: select);
+    parser.parse(_data, select: select);
     print(users.join(', '));
   }
 }

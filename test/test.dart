@@ -1,15 +1,16 @@
 import 'dart:convert';
 
-import 'package:fast_json/fast_json_handler.dart' as parser;
+import 'package:fast_json/fast_json_handler.dart' as parser_handler;
 import 'package:fast_json/fast_json_handler.dart'
-    show JsonEvent, JsonParserHandler;
-import 'package:fast_json/fast_json_selector.dart';
+    show JsonHandlerEvent, JsonParserHandler;
+import 'package:fast_json/fast_json_selector.dart' as parser_selector;
+import 'package:fast_json/fast_json_selector.dart' show JsonSelectorEvent;
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
 void main(List<String> args) {
-  _testFilter();
   _testHandler();
+  _testSelector();
 }
 
 const _data =
@@ -247,35 +248,8 @@ const _data =
   }
 ]''';
 
-void _testFilter() {
-  test('FastJsonSelector', () {
-    final cities = {'Wisokyburgh', 'Aliyaview'};
-    final users = <User>[];
-    final level = '[] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
-      if (event.levels.length == level) {
-        final map = event.lastValue as Map;
-        if (cities.contains(map['address']['city'])) {
-          final user = User.fromJson(map);
-          users.add(user);
-        }
-
-        // Free up memory
-        event.lastValue = null;
-      }
-    }
-
-    FastJsonSelector().parse(_data, select: select);
-    final matcher = [
-      User(city: 'Wisokyburgh', name: 'Ervin Howell'),
-      User(city: 'Aliyaview', name: 'Nicholas Runolfsdottir V'),
-    ];
-    expect(users, matcher);
-  });
-}
-
 _testHandler() async {
-  test('JSON parser', () async {
+  test('JSON parser handler', () async {
     {
       final handler = _JsonParserHandler();
       final matcher = {
@@ -284,7 +258,7 @@ _testHandler() async {
         'string': '1\\u00202'
       };
       final source = jsonEncode(matcher);
-      parser.parse(source, handler);
+      parser_handler.parse(source, handler);
       expect(handler.lastValue, matcher);
     }
     {
@@ -297,7 +271,7 @@ _testHandler() async {
         null
       ];
       final source = jsonEncode(matcher);
-      parser.parse(source, handler);
+      parser_handler.parse(source, handler);
       expect(handler.lastValue, matcher);
     }
     {
@@ -305,7 +279,7 @@ _testHandler() async {
       for (final matcher in matchers) {
         final handler = _JsonParserHandler();
         final source = jsonEncode(matcher);
-        parser.parse(source, handler);
+        parser_handler.parse(source, handler);
         expect(handler.lastValue, matcher);
       }
     }
@@ -318,26 +292,26 @@ _testHandler() async {
       final cities = ['Aliyaview', 'Wisokyburgh'];
       // Founds users
       final users = <Map<String, dynamic>>[];
-      void handle(JsonEvent event, dynamic value) {
+      void handle(JsonHandlerEvent event, dynamic value) {
         switch (event) {
-          case JsonEvent.beginArray:
+          case JsonHandlerEvent.beginArray:
             buffer.add([]);
             break;
-          case JsonEvent.beginObject:
+          case JsonHandlerEvent.beginObject:
             buffer.add(<String, dynamic>{});
             break;
-          case JsonEvent.endArray:
-          case JsonEvent.endObject:
+          case JsonHandlerEvent.endArray:
+          case JsonHandlerEvent.endObject:
             lastValue = buffer.removeLast();
             break;
-          case JsonEvent.element:
+          case JsonHandlerEvent.element:
             buffer.last.add(lastValue);
             break;
-          case JsonEvent.beginKey:
+          case JsonHandlerEvent.beginKey:
             keys.add(value as String);
             path = keys.join('.');
             break;
-          case JsonEvent.endKey:
+          case JsonHandlerEvent.endKey:
             buffer.last[value] = lastValue;
             if (path == 'address.city') {
               if (cities.contains(lastValue)) {
@@ -349,14 +323,14 @@ _testHandler() async {
             keys.removeLast();
             path = keys.join('.');
             break;
-          case JsonEvent.value:
+          case JsonHandlerEvent.value:
             lastValue = value;
             break;
         }
       }
 
       final handler = _JsonParserHandler2(handle);
-      parser.parse(_data, handler);
+      parser_handler.parse(_data, handler);
       final matcher = [
         {
           "id": 2,
@@ -405,6 +379,33 @@ _testHandler() async {
   });
 }
 
+void _testSelector() {
+  test('JSON parser selector', () {
+    final cities = {'Wisokyburgh', 'Aliyaview'};
+    final users = <User>[];
+    final level = '[] 0 {}'.split(' ').length;
+    void select(JsonSelectorEvent event) {
+      if (event.levels.length == level) {
+        final map = event.lastValue as Map;
+        if (cities.contains(map['address']['city'])) {
+          final user = User.fromJson(map);
+          users.add(user);
+        }
+
+        // Free up memory
+        event.lastValue = null;
+      }
+    }
+
+    parser_selector.parse(_data, select: select);
+    final matcher = [
+      User(city: 'Wisokyburgh', name: 'Ervin Howell'),
+      User(city: 'Aliyaview', name: 'Nicholas Runolfsdottir V'),
+    ];
+    expect(users, matcher);
+  });
+}
+
 class User {
   final String city;
 
@@ -437,39 +438,39 @@ class _JsonParserHandler extends JsonParserHandler {
   List buffer = [];
   dynamic lastValue;
   @override
-  void handle(JsonEvent event, dynamic value) {
+  void handle(JsonHandlerEvent event, dynamic value) {
     switch (event) {
-      case JsonEvent.beginArray:
+      case JsonHandlerEvent.beginArray:
         buffer.add([]);
         break;
-      case JsonEvent.beginObject:
+      case JsonHandlerEvent.beginObject:
         buffer.add(<String, dynamic>{});
         break;
-      case JsonEvent.endArray:
-      case JsonEvent.endObject:
+      case JsonHandlerEvent.endArray:
+      case JsonHandlerEvent.endObject:
         lastValue = buffer.removeLast();
         break;
-      case JsonEvent.element:
+      case JsonHandlerEvent.element:
         buffer.last.add(lastValue);
         break;
-      case JsonEvent.beginKey:
+      case JsonHandlerEvent.beginKey:
         // Not used here
         break;
-      case JsonEvent.endKey:
+      case JsonHandlerEvent.endKey:
         buffer.last[value] = lastValue;
         break;
-      case JsonEvent.value:
+      case JsonHandlerEvent.value:
         lastValue = value;
         break;
     }
   }
 }
 
-class _JsonParserHandler2 extends parser.JsonParserHandler {
-  final void Function(JsonEvent event, dynamic value) _handler;
+class _JsonParserHandler2 extends parser_handler.JsonParserHandler {
+  final void Function(JsonHandlerEvent event, dynamic value) _handler;
 
   _JsonParserHandler2(this._handler);
 
   @override
-  void handle(JsonEvent event, dynamic value) => _handler(event, value);
+  void handle(JsonHandlerEvent event, dynamic value) => _handler(event, value);
 }

@@ -16,7 +16,9 @@ Currently contains the following parsers:
 
 ## Example using FastJsonSelector
 
-Part of `example\example_select.dart`
+The `FastJsonSelector` implemented on top of an event-based parser.  
+This is an example of how you can use the low-level event-based parser `JsonParserHandler` to solve problems, and at the same time it is an independent implementation of an approach to solving the problem of optimizing data selection with high efficiency.  
+
 
 ```dart
 import 'package:fast_json/fast_json_selector.dart';

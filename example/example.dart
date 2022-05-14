@@ -1,6 +1,6 @@
 import 'package:fast_json/fast_json_handler.dart' as parser;
 import 'package:fast_json/fast_json_handler.dart'
-    show JsonEvent, JsonParserHandler;
+    show JsonHandlerEvent, JsonParserHandler;
 
 /// An example of filtering JSON data without reading parsing results into
 /// memory.
@@ -13,23 +13,23 @@ void main(List<String> args) {
   final cities = {'McKenziehaven', 'Wisokyburgh'};
   var isSatisfies = false;
   var level = 0;
-  void handle(parser.JsonEvent event, dynamic value) {
+  void handle(JsonHandlerEvent event, dynamic value) {
     switch (event) {
-      case JsonEvent.beginArray:
+      case JsonHandlerEvent.beginArray:
         buffer.add([]);
         break;
-      case JsonEvent.beginObject:
+      case JsonHandlerEvent.beginObject:
         level++;
         buffer.add(<String, dynamic>{});
         break;
-      case JsonEvent.endArray:
+      case JsonHandlerEvent.endArray:
         lastValue = buffer.removeLast();
         break;
-      case JsonEvent.endObject:
+      case JsonHandlerEvent.endObject:
         level--;
         lastValue = buffer.removeLast();
         break;
-      case JsonEvent.element:
+      case JsonHandlerEvent.element:
         if (level > 0) {
           buffer.last.add(lastValue);
         } else if (isSatisfies) {
@@ -37,11 +37,11 @@ void main(List<String> args) {
         }
 
         break;
-      case JsonEvent.beginKey:
+      case JsonHandlerEvent.beginKey:
         keys.add(value as String);
         path = keys.join('.');
         break;
-      case JsonEvent.endKey:
+      case JsonHandlerEvent.endKey:
         buffer.last[value] = lastValue;
         if (path == 'address.city') {
           isSatisfies = cities.contains(lastValue);
@@ -50,7 +50,7 @@ void main(List<String> args) {
         keys.removeLast();
         path = keys.join('.');
         break;
-      case JsonEvent.value:
+      case JsonHandlerEvent.value:
         // Handle values not allowed here
         lastValue = value;
         break;
@@ -188,10 +188,10 @@ const _data =
 ]''';
 
 class _JsonParserHandler extends JsonParserHandler {
-  final void Function(JsonEvent event, dynamic value) _handler;
+  final void Function(JsonHandlerEvent event, dynamic value) _handler;
 
   _JsonParserHandler(this._handler);
 
   @override
-  void handle(JsonEvent event, dynamic value) => _handler(event, value);
+  void handle(JsonHandlerEvent event, dynamic value) => _handler(event, value);
 }
