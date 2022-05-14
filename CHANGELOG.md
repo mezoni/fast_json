@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Added an example of how to terminate selection without waiting for parsing to the end of the entire file
+
 ## 0.1.3
 
 - Implemented and tested `FastJsonSelector`

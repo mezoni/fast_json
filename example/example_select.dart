@@ -4,11 +4,11 @@ import 'package:fast_json/fast_json_selector.dart' show JsonSelectorEvent;
 void main(List<String> args) {
   {
     // Show how levels are organized
-    void handle(JsonSelectorEvent event) {
+    void select(JsonSelectorEvent event) {
       print('${event.levels.length}: ${event.levels.join(' ')}');
     }
 
-    parser.parse(_data, select: handle);
+    parser.parse(_data, select: select);
   }
 
   {
@@ -30,6 +30,38 @@ void main(List<String> args) {
     }
 
     parser.parse(_data, select: select);
+    print(users.join(', '));
+  }
+
+  {
+    // Select users from the list by indexes [2..3] and terminate selection
+    final users = <User>[];
+    final level = '{} data [] 0 {}'.split(' ').length;
+    final elementLevel = '{} data [] 0'.split(' ').length;
+    void select(JsonSelectorEvent event) {
+      final levels = event.levels;
+      if (levels.length == level) {
+        final index = event.levels[elementLevel - 1] as int;
+        if (index >= 2 && index <= 3) {
+          final map = event.lastValue as Map;
+          final user = User.fromJson(map);
+          users.add(user);
+        }
+
+        // Free up memory
+        event.lastValue = null;
+        if (users.length == 2) {
+          throw const _TerminateException();
+        }
+      }
+    }
+
+    try {
+      parser.parse(_data, select: select);
+    } on _TerminateException {
+      //
+    }
+
     print(users.join(', '));
   }
 
@@ -88,30 +120,6 @@ void main(List<String> args) {
 
     parser.parse(_data, select: select);
     print(companies.join(', '));
-  }
-
-  {
-    // Select users [2..4]
-    final users = <User>[];
-    final level = '{} data [] 0 {}'.split(' ').length;
-    final elementLevel = '{} data [] 0'.split(' ').length;
-    void select(JsonSelectorEvent event) {
-      final levels = event.levels;
-      if (levels.length == level) {
-        final index = event.levels[elementLevel - 1] as int;
-        if (index >= 2 && index <= 4) {
-          final map = event.lastValue as Map;
-          final user = User.fromJson(map);
-          users.add(user);
-        }
-
-        // Free up memory
-        event.lastValue = null;
-      }
-    }
-
-    parser.parse(_data, select: select);
-    print(users.join(', '));
   }
 }
 
@@ -273,4 +281,8 @@ class User {
       name: json['name'] as String,
     );
   }
+}
+
+class _TerminateException {
+  const _TerminateException();
 }
