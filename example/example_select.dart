@@ -56,7 +56,6 @@ void main(List<String> args) {
     final companies = <Company>[];
     final level = '{} data [] 0 {}'.split(' ').length;
     void select(JsonSelectorEvent event) {
-      // 5:  . data [] 0 .
       if (event.levels.length == level) {
         final map = event.lastValue as Map;
         final company = Company.fromJson(map['company'] as Map);
@@ -95,12 +94,11 @@ void main(List<String> args) {
     // Select users [2..4]
     final users = <User>[];
     final level = '{} data [] 0 {}'.split(' ').length;
+    final elementLevel = '{} data [] 0'.split(' ').length;
     void select(JsonSelectorEvent event) {
       final levels = event.levels;
-      // 5:  . data [] 0 .
       if (levels.length == level) {
-        // 4: . data [] 0
-        final index = event.levels[levels.length - 2] as int;
+        final index = event.levels[elementLevel - 1] as int;
         if (index >= 2 && index <= 4) {
           final map = event.lastValue as Map;
           final user = User.fromJson(map);

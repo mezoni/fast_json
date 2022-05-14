@@ -11,26 +11,28 @@ All parsers are recursive parsers.
 Currently contains the following parsers:
 
 - Classic parser. Slightly slower than Dart SDK but with better error reporting system
-- Event-based parser. A synchronous parser that does not store the results of the parsing, but instead invokes an event handler. Useful for reading data with filtering
-- Selector implemented on top of an event-based parser. Simplifies data selection with just one event
+- Parser-handler. Event-based parser. A synchronous parser that does not store the results of the parsing, but instead invokes an event handler. Useful for reading data with filtering
+- Parser-selector. Event-based parser. Implemented using parser-handler. Simplifies data selection with just one event
 
-## Example using FastJsonSelector
+## Example using parser-selector
 
-The `FastJsonSelector` implemented on top of an event-based parser.  
-This is an example of how you can use the low-level event-based parser `JsonParserHandler` to solve problems, and at the same time it is an independent implementation of an approach to solving the problem of optimizing data selection with high efficiency.  
-
+The parser-selector implemented using parser-handler.  
+This is an example of how you can use a low level parser-handler to perform tasks at a higher level, and at the same time it is an independent implementation of an approach to solving the problem of optimizing data selection with high efficiency.  
+And, of course, you can make an even higher-level solution that will be even easier and more convenient to use, but this solution will no longer be very efficient in terms of performance.  
+But, in this case, the tasks can be fit in 2-3 lines of code.  
 
 ```dart
-import 'package:fast_json/fast_json_selector.dart';
+import 'package:fast_json/fast_json_selector.dart' as parser;
+import 'package:fast_json/fast_json_selector.dart' show JsonSelectorEvent;
 
 void main(List<String> args) {
   {
     // Show how levels are organized
-    void handle(FastJsonSelectorEvent event) {
+    void handle(JsonSelectorEvent event) {
       print('${event.levels.length}: ${event.levels.join(' ')}');
     }
 
-    FastJsonSelector().parse(_data, select: handle);
+    parser.parse(_data, select: handle);
   }
 
   {
@@ -38,7 +40,7 @@ void main(List<String> args) {
     final cities = {'McKenziehaven', 'Wisokyburgh'};
     final users = <User>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
+    void select(JsonSelectorEvent event) {
       if (event.levels.length == level) {
         final map = event.lastValue as Map;
         if (cities.contains(map['address']['city'])) {
@@ -51,7 +53,7 @@ void main(List<String> args) {
       }
     }
 
-    FastJsonSelector().parse(_data, select: select);
+    parser.parse(_data, select: select);
     print(users.join(', '));
   }
 
@@ -59,7 +61,7 @@ void main(List<String> args) {
     // Select all websites
     final websites = <String>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
+    void select(JsonSelectorEvent event) {
       if (event.levels.length == level) {
         final map = event.lastValue as Map;
         final website = map['website'] as String;
@@ -69,7 +71,7 @@ void main(List<String> args) {
       }
     }
 
-    FastJsonSelector().parse(_data, select: select);
+    parser.parse(_data, select: select);
     print(websites.join(', '));
   }
 
@@ -77,8 +79,7 @@ void main(List<String> args) {
     // Select all companies
     final companies = <Company>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
-      // 5:  . data [] 0 .
+    void select(JsonSelectorEvent event) {
       if (event.levels.length == level) {
         final map = event.lastValue as Map;
         final company = Company.fromJson(map['company'] as Map);
@@ -88,7 +89,7 @@ void main(List<String> args) {
       }
     }
 
-    FastJsonSelector().parse(_data, select: select);
+    parser.parse(_data, select: select);
     print(companies.join(', '));
   }
 
@@ -96,7 +97,7 @@ void main(List<String> args) {
     // Select all companies for users from South Elvis
     final companies = <Company>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
+    void select(JsonSelectorEvent event) {
       if (event.levels.length == level) {
         final map = event.lastValue as Map;
         if (map['address']['city'] == 'South Elvis') {
@@ -109,7 +110,7 @@ void main(List<String> args) {
       }
     }
 
-    FastJsonSelector().parse(_data, select: select);
+    parser.parse(_data, select: select);
     print(companies.join(', '));
   }
 
@@ -117,12 +118,11 @@ void main(List<String> args) {
     // Select users [2..4]
     final users = <User>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    void select(FastJsonSelectorEvent event) {
+    final elementLevel = '{} data [] 0'.split(' ').length;
+    void select(JsonSelectorEvent event) {
       final levels = event.levels;
-      // 5:  . data [] 0 .
       if (levels.length == level) {
-        // 4: . data [] 0
-        final index = event.levels[levels.length - 2] as int;
+        final index = event.levels[elementLevel - 1] as int;
         if (index >= 2 && index <= 4) {
           final map = event.lastValue as Map;
           final user = User.fromJson(map);
@@ -134,7 +134,7 @@ void main(List<String> args) {
       }
     }
 
-    FastJsonSelector().parse(_data, select: select);
+    parser.parse(_data, select: select);
     print(users.join(', '));
   }
 }
