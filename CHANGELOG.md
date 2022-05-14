@@ -1,3 +1,7 @@
+## 0.1.5
+
+- After updates to the `parser builder`, changes were made to the parser builders so that the generated parsers better display errors in case of an `unterminated` string. Now there are two errors, one at the beginning of the string (new feature) and one at the end of the file
+
 ## 0.1.4
 
 - Added an example of how to terminate selection without waiting for parsing to the end of the entire file
