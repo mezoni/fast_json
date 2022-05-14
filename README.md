@@ -2,7 +2,7 @@
 
 Collection of JSON parsers. Classic parser, event-based parser. Pretty quick parsing.
 
-Version: 0.1.4
+Version: 0.1.5
 
 ## Information
 

@@ -57,7 +57,6 @@ class _JsonParserHandler<T> extends JsonParserHandler {
         _select(context);
         context.buffer.last[value] = context.lastValue;
         context.levels.removeLast();
-
         break;
       case JsonHandlerEvent.value:
         context.lastValue = value;
