@@ -58,7 +58,7 @@ void main(List<String> args) {
   }
 
   final handler = _JsonParserHandler(handle);
-  parser.parse(_posts, handler);
+  parser.parse(_data, handler);
   final users = (lastValue as List).cast<Map<String, dynamic>>();
   print('Search criteria: cities ${cities.join(', ')}');
   print('Found ${users.length} user(s)');
@@ -67,7 +67,8 @@ void main(List<String> args) {
   }
 }
 
-const _posts = '''
+const _data =
+    '''
 [
   {
     "id": 1,

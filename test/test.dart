@@ -3,14 +3,17 @@ import 'dart:convert';
 import 'package:fast_json/fast_json_handler.dart' as parser;
 import 'package:fast_json/fast_json_handler.dart'
     show JsonEvent, JsonParserHandler;
+import 'package:fast_json/fast_json_selector.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
 void main(List<String> args) {
-  _testStraem();
+  _testFilter();
+  _testHandler();
 }
 
-const _posts = '''
+const _data =
+    '''
 [
   {
     "id": 1,
@@ -244,7 +247,34 @@ const _posts = '''
   }
 ]''';
 
-_testStraem() async {
+void _testFilter() {
+  test('FastJsonSelector', () {
+    final cities = {'Wisokyburgh', 'Aliyaview'};
+    final users = <User>[];
+    final level = '[] 0 {}'.split(' ').length;
+    void select(FastJsonSelectorEvent event) {
+      if (event.levels.length == level) {
+        final map = event.lastValue as Map;
+        if (cities.contains(map['address']['city'])) {
+          final user = User.fromJson(map);
+          users.add(user);
+        }
+
+        // Free up memory
+        event.lastValue = null;
+      }
+    }
+
+    FastJsonSelector().parse(_data, select: select);
+    final matcher = [
+      User(city: 'Wisokyburgh', name: 'Ervin Howell'),
+      User(city: 'Aliyaview', name: 'Nicholas Runolfsdottir V'),
+    ];
+    expect(users, matcher);
+  });
+}
+
+_testHandler() async {
   test('JSON parser', () async {
     {
       final handler = _JsonParserHandler();
@@ -284,11 +314,11 @@ _testStraem() async {
       dynamic lastValue;
       final keys = <String>[];
       var path = '';
-      // This is a request criteria
+      // This is a criteria
       final cities = ['Aliyaview', 'Wisokyburgh'];
       // Founds users
       final users = <Map<String, dynamic>>[];
-      void handle(parser.JsonEvent event, dynamic value) {
+      void handle(JsonEvent event, dynamic value) {
         switch (event) {
           case JsonEvent.beginArray:
             buffer.add([]);
@@ -326,7 +356,7 @@ _testStraem() async {
       }
 
       final handler = _JsonParserHandler2(handle);
-      parser.parse(_posts, handler);
+      parser.parse(_data, handler);
       final matcher = [
         {
           "id": 2,
@@ -375,11 +405,39 @@ _testStraem() async {
   });
 }
 
+class User {
+  final String city;
+
+  final String name;
+
+  User({required this.city, required this.name});
+
+  @override
+  int get hashCode => city.hashCode ^ name.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other is User && other.city == city && other.name == name;
+  }
+
+  @override
+  String toString() {
+    return '$name from $city';
+  }
+
+  static User fromJson(Map json) {
+    return User(
+      city: json['address']['city'] as String,
+      name: json['name'] as String,
+    );
+  }
+}
+
 class _JsonParserHandler extends JsonParserHandler {
   List buffer = [];
   dynamic lastValue;
   @override
-  void handle(parser.JsonEvent event, dynamic value) {
+  void handle(JsonEvent event, dynamic value) {
     switch (event) {
       case JsonEvent.beginArray:
         buffer.add([]);

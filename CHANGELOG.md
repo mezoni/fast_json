@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Implemented and tested `FastJsonSelector`
+
 ## 0.1.2
 
 - Changes have been made to the `build_fast_json_handler.dart` parser builder so that unused variables are not generated
