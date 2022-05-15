@@ -5,7 +5,8 @@ void main(List<String> args) {
   {
     // Show how levels are organized
     void select(JsonSelectorEvent event) {
-      print('${event.levels.length}: ${event.levels.join(' ')}');
+      print('Level: ${event.levels.length}: ${event.levels.join(' ')}');
+      print('Index: ${event.index}');
     }
 
     parser.parse(_data, select: select);
@@ -37,11 +38,10 @@ void main(List<String> args) {
     // Select users from the list by indexes [2..3] and terminate selection
     final users = <User>[];
     final level = '{} data [] 0 {}'.split(' ').length;
-    final elementLevel = '{} data [] 0'.split(' ').length;
     void select(JsonSelectorEvent event) {
       final levels = event.levels;
       if (levels.length == level) {
-        final index = event.levels[elementLevel - 1] as int;
+        final index = event.index;
         if (index >= 2 && index <= 3) {
           final map = event.lastValue as Map;
           final user = User.fromJson(map);

@@ -1,3 +1,7 @@
+## 0.1.7
+
+- Breaking change. The changes concern `parser-selector`. Array indexes are now specified in the list of levels always with the same value `0`. This allows to uniquely identify the full path (if necessary) from the list of `levels`. Also added an `index` field to get the index of the current array
+
 ## 0.1.6
 
 - After the release of the new version of `parser_builder`, the implemented `BinarySearchBuilder` generates highly efficient predicates for character testing. The handwritten predicate for string character testing has been replaced with `CharClass`. Now the predicate code has become even more correct and no less fast

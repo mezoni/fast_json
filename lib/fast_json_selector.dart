@@ -10,6 +10,10 @@ void parse(String source,
 class JsonSelectorEvent {
   final List buffer = [];
 
+  int index = 0;
+
+  final indexes = <int>[];
+
   dynamic lastValue;
 
   final List levels = [];
@@ -28,14 +32,16 @@ class _JsonParserHandler<T> extends JsonParserHandler {
       case JsonHandlerEvent.beginArray:
         context.buffer.add([]);
         context.levels.add('[]');
-        context.levels.add(0);
+        context.levels.add('0');
+        context.indexes.add(context.index);
+        context.index = 0;
         break;
       case JsonHandlerEvent.beginObject:
         context.buffer.add(<String, dynamic>{});
         context.levels.add('{}');
         break;
       case JsonHandlerEvent.endArray:
-        context.levels.removeLast();
+        context.index = context.indexes.removeLast();
         context.lastValue = context.buffer.removeLast();
         _select(context);
         context.levels.removeLast();
@@ -48,7 +54,7 @@ class _JsonParserHandler<T> extends JsonParserHandler {
       case JsonHandlerEvent.element:
         _select(context);
         context.buffer.last.add(context.lastValue);
-        context.levels.last++;
+        context.index++;
         break;
       case JsonHandlerEvent.beginKey:
         context.levels.add(context.lastValue as String);
