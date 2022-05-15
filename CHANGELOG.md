@@ -1,3 +1,7 @@
+## 0.1.6
+
+- After the release of the new version of `parser_builder`, the implemented `BinarySearchBuilder` generates highly efficient predicates for character testing. The handwritten predicate for string character testing has been replaced with `CharClass`. Now the predicate code has become even more correct and no less fast
+
 ## 0.1.5
 
 - After updates to the `parser builder`, changes were made to the parser builders so that the generated parsers better display errors in case of an `unterminated` string. Now there are two errors, one at the beginning of the string (new feature) and one at the end of the file

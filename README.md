@@ -2,7 +2,11 @@
 
 Collection of JSON parsers. Classic parser, event-based parser. Pretty quick parsing.
 
-Version: 0.1.5
+Version: 0.1.6
+
+This software also demonstrates in practice how you can generate high-performance parsers with minimal memory consumption using [`parser_builder`](https://pub.dev/packages/parser_builder).  
+Creating a fast parser is very easy.  
+It may be a little slower, a little faster, or have the same performance as a handwritten one, but the time it takes to create it can be reduced by several times using [`parser_builder`](https://pub.dev/packages/parser_builder).
 
 ## Information
 

@@ -109,10 +109,10 @@ dynamic _json(State<String> state) {
         state.fail(state.pos, ParseError.expected, 0, 'EOF');
       }
     }
-  }
-  if (!state.ok) {
-    $0 = null;
-    state.pos = $pos;
+    if (!state.ok) {
+      $0 = null;
+      state.pos = $pos;
+    }
   }
   return $0;
 }
@@ -241,9 +241,9 @@ void _quote(State<String> state) {
   }
   if (state.ok) {
     _ws(state);
-  }
-  if (!state.ok) {
-    state.pos = $pos;
+    if (!state.ok) {
+      state.pos = $pos;
+    }
   }
 }
 
@@ -272,7 +272,11 @@ String? _string(State<String> state) {
       while (state.pos < source.length) {
         final pos = state.pos;
         $c = source.readRune(state);
-        final ok = $c >= 0x20 && $c != 0x22 && $c != 0x5c;
+        final ok = $c <= 91
+            ? $c <= 33
+                ? $c >= 32
+                : $c >= 35
+            : $c <= 1114111 && $c >= 93;
         if (!ok) {
           state.pos = pos;
           break;
@@ -311,10 +315,10 @@ String? _string(State<String> state) {
     if (state.ok) {
       _quote(state);
     }
-  }
-  if (!state.ok) {
-    $0 = null;
-    state.pos = $pos;
+    if (!state.ok) {
+      $0 = null;
+      state.pos = $pos;
+    }
   }
   state.minErrorPos = $min;
   if (!state.ok) {
@@ -623,9 +627,9 @@ void _openBracket(State<String> state) {
   }
   if (state.ok) {
     _ws(state);
-  }
-  if (!state.ok) {
-    state.pos = $pos;
+    if (!state.ok) {
+      state.pos = $pos;
+    }
   }
 }
 
@@ -643,9 +647,6 @@ dynamic _values(State<String> state) {
       state.ok = true;
       if (state.ok) {
         $1 = _handleElement(state);
-      }
-      if (state.ok) {
-        //
       }
     }
     if (!state.ok) {
@@ -665,9 +666,9 @@ dynamic _values(State<String> state) {
     }
     if (state.ok) {
       _ws(state);
-    }
-    if (!state.ok) {
-      state.pos = $pos3;
+      if (!state.ok) {
+        state.pos = $pos3;
+      }
     }
     if (!state.ok) {
       break;
@@ -703,9 +704,9 @@ void _closeBracket(State<String> state) {
   }
   if (state.ok) {
     _ws(state);
-  }
-  if (!state.ok) {
-    state.pos = $pos;
+    if (!state.ok) {
+      state.pos = $pos;
+    }
   }
 }
 
@@ -720,9 +721,6 @@ dynamic _array(State<String> state) {
     state.ok = true;
     if (state.ok) {
       $1 = _handleBeginArray(state);
-    }
-    if (state.ok) {
-      //
     }
   }
   if (!state.ok) {
@@ -745,18 +743,15 @@ dynamic _array(State<String> state) {
         if (state.ok) {
           $3 = _handleEndArray(state);
         }
-        if (state.ok) {
-          //
-        }
       }
       if (!state.ok) {
         state.pos = $pos2;
       }
     }
-  }
-  if (!state.ok) {
-    $0 = null;
-    state.pos = $pos;
+    if (!state.ok) {
+      $0 = null;
+      state.pos = $pos;
+    }
   }
   return $0;
 }
@@ -773,9 +768,9 @@ void _openBrace(State<String> state) {
   }
   if (state.ok) {
     _ws(state);
-  }
-  if (!state.ok) {
-    state.pos = $pos;
+    if (!state.ok) {
+      state.pos = $pos;
+    }
   }
 }
 
@@ -800,9 +795,9 @@ MapEntry<String, dynamic>? _keyValue(State<String> state) {
     }
     if (state.ok) {
       _ws(state);
-    }
-    if (!state.ok) {
-      state.pos = $pos1;
+      if (!state.ok) {
+        state.pos = $pos1;
+      }
     }
     if (state.ok) {
       dynamic $3;
@@ -843,9 +838,9 @@ List<MapEntry<String, dynamic>>? _keyValues(State<String> state) {
     }
     if (state.ok) {
       _ws(state);
-    }
-    if (!state.ok) {
-      state.pos = $pos1;
+      if (!state.ok) {
+        state.pos = $pos1;
+      }
     }
     if (!state.ok) {
       break;
@@ -870,9 +865,9 @@ void _closeBrace(State<String> state) {
   }
   if (state.ok) {
     _ws(state);
-  }
-  if (!state.ok) {
-    state.pos = $pos;
+    if (!state.ok) {
+      state.pos = $pos;
+    }
   }
 }
 
@@ -887,9 +882,6 @@ dynamic _object(State<String> state) {
     state.ok = true;
     if (state.ok) {
       $1 = _handleBeginObject(state);
-    }
-    if (state.ok) {
-      //
     }
   }
   if (!state.ok) {
@@ -907,9 +899,6 @@ dynamic _object(State<String> state) {
         state.ok = true;
         if (state.ok) {
           $3 = _handleEndObject(state);
-        }
-        if (state.ok) {
-          //
         }
       }
       if (!state.ok) {
@@ -990,10 +979,10 @@ dynamic _value(State<String> state) {
   }
   if (state.ok) {
     _ws(state);
-  }
-  if (!state.ok) {
-    $0 = null;
-    state.pos = $pos;
+    if (!state.ok) {
+      $0 = null;
+      state.pos = $pos;
+    }
   }
   return $0;
 }
