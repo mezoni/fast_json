@@ -10,11 +10,9 @@ import 'package:parser_builder/parser_builder.dart';
 import 'package:parser_builder/sequence.dart';
 import 'package:parser_builder/string.dart';
 
-import 'build_json_number_parser.dart' as json_number;
-
 Future<void> main(List<String> args) async {
   final context = Context();
-  await fastBuild(context, [_json, _value_], 'lib/fast_json.dart',
+  await fastBuild(context, [_json, _value_], 'lib/fast_json_big_int.dart',
       footer: __footer, publish: {'parse': _json});
 }
 
@@ -43,6 +41,16 @@ int _toHexValue(String s) {
 }''';
 
 const _array = Named('_array', Delimited(_openBracket, _values, _closeBracket));
+
+const _bigInt = Named(
+    '_bigInt',
+    Map1(
+      Recognize(Fast2(
+        Opt(Tag('-')),
+        Fast2(Digit1(), Not(Tags(['.', 'e', 'E']))),
+      )),
+      ExpressionAction(['x'], 'BigInt.parse({{x}})'),
+    ));
 
 const _closeBrace =
     Named('_closeBrace', Fast(Terminated(Tag('}'), _ws)), [_inline]);
@@ -98,7 +106,22 @@ const _keyValue = Named(
 
 const _keyValues = Named('_keyValues', SeparatedList0(_keyValue, _comma));
 
-const _number = Named('_number', Expected('number', json_number.parser));
+///  '-'?('0'|[1-9][0-9]*)('.'[0-9]+)?([eE][+-]?[0-9]+)?
+const _number = Named(
+    '_number',
+    Expected(
+        'number',
+        Map1(
+          Recognize(Fast4(
+            Opt(Tag('-')),
+            Alt2(Tag('0'), Fast2(Satisfy(CharClass('[1-9]')), Digit0())),
+            Opt(Fast2(Tag('.'), Digit1())),
+            Opt(Fast3(Tags(['e', 'E']), Opt(Tags(['+', '-'])), Digit1())),
+          )),
+          ExpressionAction(['x'], 'num.parse({{x}})'),
+        )));
+
+const _numeric = Named('_numeric', Alt2(_bigInt, _number));
 
 const _object = Named(
     '_object',
@@ -143,7 +166,7 @@ const _value_ = Named(
     Terminated(
         Alt5(
           _string,
-          _number,
+          _numeric,
           _array,
           _object,
           _primitives,

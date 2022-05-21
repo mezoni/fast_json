@@ -1,3 +1,8 @@
+## 0.1.9
+
+- Implemented and tested parser with `BigInt` support
+- `Unterminated string` error generation has been refactored
+
 ## 0.1.8
 
 - Fixed bug in `parser-selector`

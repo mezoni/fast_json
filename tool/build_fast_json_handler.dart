@@ -219,17 +219,19 @@ const _primitives = Named(
 
 const _quote = Named('_quote', Fast(Terminated(Tag('"'), _ws)), [_inline]);
 
-const _string = Named(
+const _string = Named<String, String>(
     '_string',
-    _Unterminated(
+    Nested(
         'string',
-        'Unterminated string',
-        Delimited(
-          Tag('"'),
-          Map1(_stringValue,
-              ExpressionAction<String>(['x'], '_handleValue(state, {{x}})')),
-          _quote,
-        )));
+        WithStartAndLastErrorPos(Delimited(
+            Tag('"'),
+            Map1(_stringValue,
+                ExpressionAction<String>(['x'], '_handleValue(state, {{x}})')),
+            Alt2(
+              _quote,
+              FailMessage(
+                  FailPos.lastErrorPos, 'Unterminated string', FailPos.start),
+            )))));
 
 const _stringValue = StringValue(_isNormalChar, 0x5c, _escaped);
 
@@ -279,42 +281,5 @@ class _Handle<I> extends ParserBuilder<I, dynamic> {
   String build(Context context, ParserResult? result) {
     return Fast2(parser, Slow(Calculate(ExpressionAction([], 'null'))))
         .build(context, result);
-  }
-}
-
-class _Unterminated<I, O> extends ParserBuilder<I, O> {
-  static const _template = '''
-final {{last}} = state.setLastErrorPos(-1);
-final {{min}} = state.minErrorPos;
-state.minErrorPos = state.pos + 1;
-{{p1}}
-state.minErrorPos = {{min}};
-if (!state.ok) {
-  state.fail(state.pos, ParseError.expected, 0, {{tag}});
-  final pos = state.lastErrorPos;
-  if (pos >= source.length) {
-    state.fail(pos, ParseError.message, 0, {{message}}, state.pos);
-  }
-}
-state.restoreLastErrorPos({{last}});''';
-
-  final String message;
-
-  final ParserBuilder<I, O> parser;
-
-  final String tag;
-
-  const _Unterminated(this.tag, this.message, this.parser);
-
-  @override
-  String build(Context context, ParserResult? result) {
-    context.refersToStateSource = true;
-    final values = context.allocateLocals(['last', 'min']);
-    values.addAll({
-      'message': helper.escapeString(message),
-      'p1': parser.build(context, result),
-      'tag': helper.escapeString(tag),
-    });
-    return render(_template, values, [result]);
   }
 }

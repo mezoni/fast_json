@@ -260,278 +260,259 @@ String? _string(State<String> state) {
   return $0;
 }
 
-num? _number(State<String> state) {
-  num? $0;
+dynamic _bigInt(State<String> state) {
+  dynamic $0;
+  final source = state.source;
+  String? $1;
+  final $pos = state.pos;
+  final $pos1 = state.pos;
+  state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 45;
+  if (state.ok) {
+    state.pos += 1;
+  } else {
+    state.fail(state.pos, ParseError.expected, '-');
+  }
+  if (!state.ok) {
+    state.ok = true;
+  }
+  if (state.ok) {
+    final $pos2 = state.pos;
+    final $pos3 = state.pos;
+    while (state.pos < source.length) {
+      final c = source.codeUnitAt(state.pos);
+      final ok = c <= 57 && c >= 48;
+      if (!ok) {
+        break;
+      }
+      state.pos++;
+    }
+    state.ok = state.pos != $pos3;
+    if (!state.ok) {
+      state.fail($pos3, ParseError.character);
+    }
+    if (state.ok) {
+      final $pos4 = state.pos;
+      final $log = state.log;
+      state.log = false;
+      state.ok = state.pos < source.length;
+      if (state.ok) {
+        final pos = state.pos;
+        final c = source.codeUnitAt(pos);
+        String? v;
+        if (c == 46) {
+          state.pos++;
+          v = '.';
+        } else if (c == 101) {
+          state.pos++;
+          v = 'e';
+        } else if (c == 69) {
+          state.pos++;
+          v = 'E';
+        }
+        state.ok = v != null;
+      }
+      if (!state.ok) {
+        state.fail(state.pos, ParseError.expected, '.');
+        state.fail(state.pos, ParseError.expected, 'e');
+        state.fail(state.pos, ParseError.expected, 'E');
+      }
+      state.log = $log;
+      state.ok = !state.ok;
+      if (!state.ok) {
+        state.pos = $pos4;
+        state.fail(state.pos, ParseError.message, 'Unknown error');
+      }
+    }
+    if (!state.ok) {
+      state.pos = $pos2;
+    }
+  }
+  if (!state.ok) {
+    state.pos = $pos1;
+  }
+  if (state.ok) {
+    $1 = source.slice($pos, state.pos);
+  }
+  if (state.ok) {
+    final v = $1!;
+    $0 = BigInt.parse(v);
+  }
+  return $0;
+}
+
+dynamic _number(State<String> state) {
+  dynamic $0;
   final source = state.source;
   final $log = state.log;
   state.log = false;
-  state.ok = true;
+  String? $1;
   final $pos = state.pos;
-  num? $v;
-  while (true) {
-    //  '-'?('0'|[1-9][0-9]*)('.'[0-9]+)?([eE][+-]?[0-9]+)?
-    const eof = 0x110000;
-    const mask = 0x30;
-    const powersOfTen = [
-      1.0,
-      1e1,
-      1e2,
-      1e3,
-      1e4,
-      1e5,
-      1e6,
-      1e7,
-      1e8,
-      1e9,
-      1e10,
-      1e11,
-      1e12,
-      1e13,
-      1e14,
-      1e15,
-      1e16,
-      1e17,
-      1e18,
-      1e19,
-      1e20,
-      1e21,
-      1e22,
-    ];
-    final length = source.length;
-    var pos = state.pos;
-    var c = eof;
-    if (pos < length) {
-      c = source.codeUnitAt(pos);
-    } else {
-      c = eof;
-    }
-    var hasSign = false;
-    if (c == 0x2d) {
-      pos++;
-      if (pos < length) {
-        c = source.codeUnitAt(pos);
-      } else {
-        c = eof;
-      }
-      hasSign = true;
-    }
-    var digit = c ^ mask;
-    if (digit > 9) {
-      state.ok = false;
-      state.pos = pos;
-      break;
-    }
-    final intPartPos = pos;
-    var intPartLen = 0;
-    intPartLen = 1;
-    var intValue = 0;
-    if (digit == 0) {
-      pos++;
-      if (pos < length) {
-        c = source.codeUnitAt(pos);
-      } else {
-        c = eof;
-      }
-    } else {
-      pos++;
-      if (pos < length) {
-        c = source.codeUnitAt(pos);
-      } else {
-        c = eof;
-      }
-      intValue = digit;
-      while (true) {
-        digit = c ^ mask;
-        if (digit > 9) {
-          break;
-        }
-        pos++;
-        if (pos < length) {
-          c = source.codeUnitAt(pos);
-        } else {
-          c = eof;
-        }
-        if (intPartLen++ < 18) {
-          intValue = intValue * 10 + digit;
-        }
-      }
-    }
-    var hasDot = false;
-    var decPartLen = 0;
-    var decValue = 0;
-    if (c == 0x2e) {
-      pos++;
-      if (pos < length) {
-        c = source.codeUnitAt(pos);
-      } else {
-        c = eof;
-      }
-      hasDot = true;
-      digit = c ^ mask;
-      if (digit > 9) {
-        state.ok = false;
-        state.pos = pos;
-        break;
-      }
-      pos++;
-      if (pos < length) {
-        c = source.codeUnitAt(pos);
-      } else {
-        c = eof;
-      }
-      decPartLen = 1;
-      decValue = digit;
-      while (true) {
-        digit = c ^ mask;
-        if (digit > 9) {
-          break;
-        }
-        pos++;
-        if (pos < length) {
-          c = source.codeUnitAt(pos);
-        } else {
-          c = eof;
-        }
-        if (decPartLen++ < 18) {
-          decValue = decValue * 10 + digit;
-        }
-      }
-    }
-    var hasExp = false;
-    var hasExpSign = false;
-    var expPartLen = 0;
-    var exp = 0;
-    if (c == 0x45 || c == 0x65) {
-      pos++;
-      if (pos < length) {
-        c = source.codeUnitAt(pos);
-      } else {
-        c = eof;
-      }
-      hasExp = true;
-      switch (c) {
-        case 0x2b:
-          pos++;
-          if (pos < length) {
-            c = source.codeUnitAt(pos);
-          } else {
-            c = eof;
-          }
-          break;
-        case 0x2d:
-          pos++;
-          if (pos < length) {
-            c = source.codeUnitAt(pos);
-          } else {
-            c = eof;
-          }
-          hasExpSign = true;
-          break;
-      }
-      digit = c ^ mask;
-      if (digit > 9) {
-        state.ok = false;
-        state.pos = pos;
-        break;
-      }
-      pos++;
-      if (pos < length) {
-        c = source.codeUnitAt(pos);
-      } else {
-        c = eof;
-      }
-      expPartLen = 1;
-      exp = digit;
-      while (true) {
-        digit = c ^ mask;
-        if (digit > 9) {
-          break;
-        }
-        pos++;
-        if (pos < length) {
-          c = source.codeUnitAt(pos);
-        } else {
-          c = eof;
-        }
-        if (expPartLen++ < 18) {
-          exp = exp * 10 + digit;
-        }
-      }
-      if (expPartLen > 18) {
-        state.pos = pos;
-        $v = double.parse(source.substring($pos, pos));
-        break;
-      }
-      if (hasExpSign) {
-        exp = -exp;
-      }
-    }
-    state.pos = pos;
-    final singlePart = !hasDot && !hasExp;
-    if (singlePart && intPartLen <= 18) {
-      $v = hasSign ? -intValue : intValue;
-      break;
-    }
-    if (singlePart && intPartLen == 19) {
-      if (intValue == 922337203685477580) {
-        final digit = source.codeUnitAt(intPartPos + 18) - 0x30;
-        if (digit <= 7) {
-          intValue = intValue * 10 + digit;
-          $v = hasSign ? -intValue : intValue;
-          break;
-        }
-      }
-    }
-    var doubleValue = intValue * 1.0;
-    var expRest = intPartLen - 18;
-    expRest = expRest < 0 ? 0 : expRest;
-    exp = expRest + exp;
-    final modExp = exp < 0 ? -exp : exp;
-    if (modExp > 22) {
-      state.pos = pos;
-      $v = double.parse(source.substring($pos, pos));
-      break;
-    }
-    final k = powersOfTen[modExp];
-    if (exp > 0) {
-      doubleValue *= k;
-    } else {
-      doubleValue /= k;
-    }
-    if (decValue != 0) {
-      var value = decValue * 1.0;
-      final diff = exp - decPartLen;
-      final modDiff = diff < 0 ? -diff : diff;
-      final sign = diff < 0;
-      var rest = modDiff;
-      while (rest != 0) {
-        var i = rest;
-        if (i > 20) {
-          i = 20;
-        }
-        rest -= i;
-        final k = powersOfTen[i];
-        if (sign) {
-          value /= k;
-        } else {
-          value *= k;
-        }
-      }
-      doubleValue += value;
-    }
-    $v = hasSign ? -doubleValue : doubleValue;
-    break;
+  final $pos1 = state.pos;
+  state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 45;
+  if (state.ok) {
+    state.pos += 1;
+  } else {
+    state.fail(state.pos, ParseError.expected, '-');
+  }
+  if (!state.ok) {
+    state.ok = true;
   }
   if (state.ok) {
-    $0 = $v;
-  } else {
-    state.fail(state.pos, ParseError.character, 0, 0);
-    state.pos = $pos;
+    state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 48;
+    if (state.ok) {
+      state.pos += 1;
+    } else {
+      state.fail(state.pos, ParseError.expected, '0');
+    }
+    if (!state.ok) {
+      final $pos2 = state.pos;
+      state.ok = state.pos < source.length;
+      if (state.ok) {
+        final c = source.codeUnitAt(state.pos);
+        state.ok = c <= 57 && c >= 49;
+        if (state.ok) {
+          state.pos++;
+        } else {
+          state.fail(state.pos, ParseError.character);
+        }
+      } else {
+        state.fail(state.pos, ParseError.character);
+      }
+      if (state.ok) {
+        while (state.pos < source.length) {
+          final c = source.codeUnitAt(state.pos);
+          final ok = c <= 57 && c >= 48;
+          if (!ok) {
+            break;
+          }
+          state.pos++;
+        }
+        state.ok = true;
+      }
+      if (!state.ok) {
+        state.pos = $pos2;
+      }
+    }
+    if (state.ok) {
+      final $pos5 = state.pos;
+      state.ok =
+          state.pos < source.length && source.codeUnitAt(state.pos) == 46;
+      if (state.ok) {
+        state.pos += 1;
+      } else {
+        state.fail(state.pos, ParseError.expected, '.');
+      }
+      if (state.ok) {
+        final $pos6 = state.pos;
+        while (state.pos < source.length) {
+          final c = source.codeUnitAt(state.pos);
+          final ok = c <= 57 && c >= 48;
+          if (!ok) {
+            break;
+          }
+          state.pos++;
+        }
+        state.ok = state.pos != $pos6;
+        if (!state.ok) {
+          state.fail($pos6, ParseError.character);
+        }
+      }
+      if (!state.ok) {
+        state.pos = $pos5;
+      }
+      if (!state.ok) {
+        state.ok = true;
+      }
+      if (state.ok) {
+        final $pos7 = state.pos;
+        state.ok = state.pos < source.length;
+        if (state.ok) {
+          final pos = state.pos;
+          final c = source.codeUnitAt(pos);
+          String? v;
+          if (c == 101) {
+            state.pos++;
+            v = 'e';
+          } else if (c == 69) {
+            state.pos++;
+            v = 'E';
+          }
+          state.ok = v != null;
+        }
+        if (!state.ok) {
+          state.fail(state.pos, ParseError.expected, 'e');
+          state.fail(state.pos, ParseError.expected, 'E');
+        }
+        if (state.ok) {
+          state.ok = state.pos < source.length;
+          if (state.ok) {
+            final pos = state.pos;
+            final c = source.codeUnitAt(pos);
+            String? v;
+            if (c == 43) {
+              state.pos++;
+              v = '+';
+            } else if (c == 45) {
+              state.pos++;
+              v = '-';
+            }
+            state.ok = v != null;
+          }
+          if (!state.ok) {
+            state.fail(state.pos, ParseError.expected, '+');
+            state.fail(state.pos, ParseError.expected, '-');
+          }
+          if (!state.ok) {
+            state.ok = true;
+          }
+          if (state.ok) {
+            final $pos10 = state.pos;
+            while (state.pos < source.length) {
+              final c = source.codeUnitAt(state.pos);
+              final ok = c <= 57 && c >= 48;
+              if (!ok) {
+                break;
+              }
+              state.pos++;
+            }
+            state.ok = state.pos != $pos10;
+            if (!state.ok) {
+              state.fail($pos10, ParseError.character);
+            }
+          }
+        }
+        if (!state.ok) {
+          state.pos = $pos7;
+        }
+        if (!state.ok) {
+          state.ok = true;
+        }
+      }
+    }
+  }
+  if (!state.ok) {
+    state.pos = $pos1;
+  }
+  if (state.ok) {
+    $1 = source.slice($pos, state.pos);
+  }
+  if (state.ok) {
+    final v = $1!;
+    $0 = num.parse(v);
   }
   state.log = $log;
   if (!state.ok) {
     state.ok = false;
     state.fail(state.pos, ParseError.expected, 'number');
+  }
+  return $0;
+}
+
+dynamic _numeric(State<String> state) {
+  dynamic $0;
+  $0 = _bigInt(state);
+  if (!state.ok) {
+    $0 = _number(state);
   }
   return $0;
 }
@@ -803,7 +784,7 @@ dynamic _value(State<String> state) {
   final $pos = state.pos;
   $0 = _string(state);
   if (!state.ok) {
-    $0 = _number(state);
+    $0 = _numeric(state);
     if (!state.ok) {
       $0 = _array(state);
       if (!state.ok) {

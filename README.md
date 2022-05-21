@@ -1,8 +1,8 @@
 # fast_json
 
-Collection of JSON parsers. Classic parser, event-based parser. Pretty quick parsing.
+Collection of JSON parsers. Classic parser (also with BigNum support), event-based parser. Pretty quick parsing.
 
-Version: 0.1.8
+Version: 0.1.9
 
 This software also demonstrates in practice how you can generate high-performance parsers with minimal memory consumption using [`parser_builder`](https://pub.dev/packages/parser_builder).  
 Creating a fast parser is very easy.  
@@ -15,6 +15,7 @@ All parsers are recursive parsers.
 Currently contains the following parsers:
 
 - Classic parser. Slightly slower than Dart SDK but with better error reporting system
+- Classic parser with `BigNum` support. No restrictions on the size of integers
 - Parser-handler. Event-based parser. A synchronous parser that does not store the results of the parsing, but instead invokes an event handler. Useful for reading data with filtering
 - Parser-selector. Event-based parser. Implemented using parser-handler. Simplifies data selection with just one event
 

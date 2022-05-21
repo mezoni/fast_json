@@ -106,7 +106,7 @@ dynamic _json(State<String> state) {
     if (state.ok) {
       state.ok = state.pos >= source.length;
       if (!state.ok) {
-        state.fail(state.pos, ParseError.expected, 0, 'EOF');
+        state.fail(state.pos, ParseError.expected, 'EOF');
       }
     }
     if (!state.ok) {
@@ -129,16 +129,17 @@ int? _escapeHex(State<String> state) {
     if (state.ok) {
       state.pos++;
     } else {
-      state.fail(state.pos, ParseError.character, 0, 0);
+      state.fail(state.pos, ParseError.character);
     }
   } else {
-    state.fail(state.pos, ParseError.character, 0, 0);
+    state.fail(state.pos, ParseError.character);
   }
   if (state.ok) {
     String? $1;
-    final $last = state.setLastErrorPos(-1);
-    String? $2;
-    final $pos2 = state.pos;
+    final $pos2 = state.start;
+    state.start = state.pos;
+    final $pos3 = state.setLastErrorPos(-1);
+    final $pos4 = state.pos;
     var $count = 0;
     while ($count < 4 && state.pos < source.length) {
       final c = source.codeUnitAt(state.pos);
@@ -155,24 +156,21 @@ int? _escapeHex(State<String> state) {
     }
     state.ok = $count >= 4;
     if (state.ok) {
-      $2 = source.substring($pos2, state.pos);
+      $1 = source.substring($pos4, state.pos);
     } else {
-      state.fail(state.pos, ParseError.character, 0, 0);
-      state.pos = $pos2;
+      state.fail(state.pos, ParseError.character);
+      state.pos = $pos4;
     }
-    if (state.ok) {
-      $1 = $2;
-    } else {
-      final pos = state.lastErrorPos;
-      final length = pos - state.pos;
+    if (!state.ok) {
+      state.ok = false;
       state.fail(
-          pos,
+          state.lastErrorPos,
           ParseError.message,
-          length,
           'An escape sequence starting with \'\\u\' must be followed by 4 hexadecimal digits',
-          state.pos);
+          state.start);
     }
-    state.restoreLastErrorPos($last);
+    state.restoreLastErrorPos($pos3);
+    state.start = $pos2;
     if (state.ok) {
       final v1 = $1!;
       $0 = _toHexValue(v1);
@@ -218,10 +216,10 @@ int? _escaped(State<String> state) {
       state.pos++;
       $0 = v;
     } else {
-      state.fail(state.pos, ParseError.character, 0, 0);
+      state.fail(state.pos, ParseError.character);
     }
   } else {
-    state.fail(state.pos, ParseError.character, 0, 0);
+    state.fail(state.pos, ParseError.character);
   }
   if (!state.ok) {
     $0 = _escapeHex(state);
@@ -237,7 +235,7 @@ void _quote(State<String> state) {
   if (state.ok) {
     state.pos += 1;
   } else {
-    state.fail(state.pos, ParseError.expected, 0, '"');
+    state.fail(state.pos, ParseError.expected, '"');
   }
   if (state.ok) {
     _ws(state);
@@ -250,20 +248,22 @@ void _quote(State<String> state) {
 String? _string(State<String> state) {
   String? $0;
   final source = state.source;
-  final $last = state.setLastErrorPos(-1);
-  final $min = state.minErrorPos;
+  final $pos = state.minErrorPos;
   state.minErrorPos = state.pos + 1;
-  final $pos = state.pos;
+  final $pos1 = state.start;
+  state.start = state.pos;
+  final $pos2 = state.setLastErrorPos(-1);
+  final $pos3 = state.pos;
   state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 34;
   if (state.ok) {
     state.pos += 1;
   } else {
-    state.fail(state.pos, ParseError.expected, 0, '"');
+    state.fail(state.pos, ParseError.expected, '"');
   }
   if (state.ok) {
     String? $1;
     state.ok = true;
-    final $pos1 = state.pos;
+    final $pos4 = state.pos;
     final $list = <String>[];
     var $str = '';
     while (state.pos < source.length) {
@@ -293,7 +293,7 @@ String? _string(State<String> state) {
       int? $2;
       $2 = _escaped(state);
       if (!state.ok) {
-        state.pos = $pos1;
+        state.pos = $pos4;
         break;
       }
       if ($list.isEmpty && $str != '') {
@@ -314,21 +314,24 @@ String? _string(State<String> state) {
     }
     if (state.ok) {
       _quote(state);
+      if (!state.ok) {
+        state.ok = false;
+        state.fail(state.lastErrorPos, ParseError.message,
+            'Unterminated string', state.start);
+      }
     }
     if (!state.ok) {
       $0 = null;
-      state.pos = $pos;
+      state.pos = $pos3;
     }
   }
-  state.minErrorPos = $min;
+  state.restoreLastErrorPos($pos2);
+  state.start = $pos1;
+  state.minErrorPos = $pos;
   if (!state.ok) {
-    state.fail(state.pos, ParseError.expected, 0, 'string');
-    final pos = state.lastErrorPos;
-    if (pos >= source.length) {
-      state.fail(pos, ParseError.message, 0, 'Unterminated string', state.pos);
-    }
+    state.ok = false;
+    state.fail(state.pos, ParseError.expected, 'string');
   }
-  state.restoreLastErrorPos($last);
   return $0;
 }
 
@@ -338,7 +341,6 @@ num? _number(State<String> state) {
   final $log = state.log;
   state.log = false;
   num? $1;
-  num? $2;
   state.ok = true;
   final $pos = state.pos;
   num? $v;
@@ -597,20 +599,19 @@ num? _number(State<String> state) {
     break;
   }
   if (state.ok) {
-    $2 = $v;
+    $1 = $v;
   } else {
     state.fail(state.pos, ParseError.character, 0, 0);
     state.pos = $pos;
   }
   if (state.ok) {
-    final v = $2!;
-    $1 = _handleValue(state, v);
+    final v = $1!;
+    $0 = _handleValue(state, v);
   }
   state.log = $log;
-  if (state.ok) {
-    $0 = $1;
-  } else {
-    state.fail(state.pos, ParseError.expected, 0, 'number');
+  if (!state.ok) {
+    state.ok = false;
+    state.fail(state.pos, ParseError.expected, 'number');
   }
   return $0;
 }
@@ -623,7 +624,7 @@ void _openBracket(State<String> state) {
   if (state.ok) {
     state.pos += 1;
   } else {
-    state.fail(state.pos, ParseError.expected, 0, '[');
+    state.fail(state.pos, ParseError.expected, '[');
   }
   if (state.ok) {
     _ws(state);
@@ -662,7 +663,7 @@ dynamic _values(State<String> state) {
     if (state.ok) {
       state.pos += 1;
     } else {
-      state.fail(state.pos, ParseError.expected, 0, ',');
+      state.fail(state.pos, ParseError.expected, ',');
     }
     if (state.ok) {
       _ws(state);
@@ -700,7 +701,7 @@ void _closeBracket(State<String> state) {
   if (state.ok) {
     state.pos += 1;
   } else {
-    state.fail(state.pos, ParseError.expected, 0, ']');
+    state.fail(state.pos, ParseError.expected, ']');
   }
   if (state.ok) {
     _ws(state);
@@ -764,7 +765,7 @@ void _openBrace(State<String> state) {
   if (state.ok) {
     state.pos += 1;
   } else {
-    state.fail(state.pos, ParseError.expected, 0, '{');
+    state.fail(state.pos, ParseError.expected, '{');
   }
   if (state.ok) {
     _ws(state);
@@ -791,7 +792,7 @@ MapEntry<String, dynamic>? _keyValue(State<String> state) {
     if (state.ok) {
       state.pos += 1;
     } else {
-      state.fail(state.pos, ParseError.expected, 0, ':');
+      state.fail(state.pos, ParseError.expected, ':');
     }
     if (state.ok) {
       _ws(state);
@@ -834,7 +835,7 @@ List<MapEntry<String, dynamic>>? _keyValues(State<String> state) {
     if (state.ok) {
       state.pos += 1;
     } else {
-      state.fail(state.pos, ParseError.expected, 0, ',');
+      state.fail(state.pos, ParseError.expected, ',');
     }
     if (state.ok) {
       _ws(state);
@@ -861,7 +862,7 @@ void _closeBrace(State<String> state) {
   if (state.ok) {
     state.pos += 1;
   } else {
-    state.fail(state.pos, ParseError.expected, 0, '}');
+    state.fail(state.pos, ParseError.expected, '}');
   }
   if (state.ok) {
     _ws(state);
@@ -950,9 +951,9 @@ dynamic _primitives(State<String> state) {
     }
   }
   if (!state.ok) {
-    state.fail(state.pos, ParseError.expected, 0, 'false');
-    state.fail(state.pos, ParseError.expected, 0, 'true');
-    state.fail(state.pos, ParseError.expected, 0, 'null');
+    state.fail(state.pos, ParseError.expected, 'false');
+    state.fail(state.pos, ParseError.expected, 'true');
+    state.fail(state.pos, ParseError.expected, 'null');
   }
   if (state.ok) {
     final v = $1;
@@ -987,36 +988,119 @@ dynamic _value(State<String> state) {
   return $0;
 }
 
-String _errorMessage(String source, List<ParseError> errors,
-    [Object? color, int maxCount = 10, String? url]) {
+String _errorMessage(String source, List<ParseError> errors) {
   final sb = StringBuffer();
   for (var i = 0; i < errors.length; i++) {
-    if (i > maxCount) {
-      break;
+    if (sb.isNotEmpty) {
+      sb.writeln();
+      sb.writeln();
     }
 
     final error = errors[i];
     final start = error.start;
-    final end = error.end + 1;
-    if (end > source.length) {
-      source += ' ' * (end - source.length);
+    final end = error.end;
+    RangeError.checkValidRange(start, end, source.length);
+    var row = 1;
+    var lineStart = 0, next = 0, pos = 0;
+    while (pos < source.length) {
+      final c = source.codeUnitAt(pos++);
+      if (c == 0xa || c == 0xd) {
+        next = c == 0xa ? 0xd : 0xa;
+        if (pos < source.length && source.codeUnitAt(pos) == next) {
+          pos++;
+        }
+
+        if (pos - 1 >= start) {
+          break;
+        }
+
+        row++;
+        lineStart = pos;
+      }
     }
 
-    final file = SourceFile.fromString(source, url: url);
-    final span = file.span(start, end);
-    if (sb.isNotEmpty) {
-      sb.writeln();
+    int max(int x, int y) => x > y ? x : y;
+    int min(int x, int y) => x < y ? x : y;
+    final sourceLen = source.length;
+    final lineLimit = min(80, sourceLen);
+    final start2 = start;
+    final end2 = min(start2 + lineLimit, end);
+    final errorLen = end2 - start;
+    final extraLen = lineLimit - errorLen;
+    final rightLen = min(sourceLen - end2, extraLen - (extraLen >> 1));
+    final leftLen = min(start, max(0, lineLimit - errorLen - rightLen));
+    final list = <int>[];
+    final iterator = RuneIterator.at(source, start2);
+    for (var i = 0; i < leftLen; i++) {
+      if (!iterator.movePrevious()) {
+        break;
+      }
+
+      list.add(iterator.current);
     }
 
-    sb.write(span.message(error.toString(), color: color));
-  }
-
-  if (errors.length > maxCount) {
-    sb.writeln();
-    sb.write('(${errors.length - maxCount} more errors...)');
+    final column = start - lineStart + 1;
+    final left = String.fromCharCodes(list.reversed);
+    final end3 = min(sourceLen, start2 + (lineLimit - leftLen));
+    final indicatorLen = max(1, errorLen);
+    final right = source.substring(start2, end3);
+    var text = left + right;
+    text = text.replaceAll('\n', ' ');
+    text = text.replaceAll('\r', ' ');
+    text = text.replaceAll('\t', ' ');
+    sb.writeln('line $row, column $column: $error');
+    sb.writeln(text);
+    sb.write(' ' * leftLen + '^' * indicatorLen);
   }
 
   return sb.toString();
+}
+
+extension on String {
+  @pragma('vm:prefer-inline')
+  // ignore: unused_element
+  int readRune(State<String> state) {
+    final w1 = codeUnitAt(state.pos++);
+    if (w1 > 0xd7ff && w1 < 0xe000) {
+      if (state.pos < length) {
+        final w2 = codeUnitAt(state.pos++);
+        if ((w2 & 0xfc00) == 0xdc00) {
+          return 0x10000 + ((w1 & 0x3ff) << 10) + (w2 & 0x3ff);
+        }
+
+        state.pos--;
+      }
+
+      throw FormatException('Invalid UTF-16 character', this, state.pos - 1);
+    }
+
+    return w1;
+  }
+
+  @pragma('vm:prefer-inline')
+  // ignore: unused_element
+  int runeAt(int index) {
+    final w1 = codeUnitAt(index++);
+    if (w1 > 0xd7ff && w1 < 0xe000) {
+      if (index < length) {
+        final w2 = codeUnitAt(index);
+        if ((w2 & 0xfc00) == 0xdc00) {
+          return 0x10000 + ((w1 & 0x3ff) << 10) + (w2 & 0x3ff);
+        }
+      }
+
+      throw FormatException('Invalid UTF-16 character', this, index - 1);
+    }
+
+    return w1;
+  }
+
+  /// Returns a slice (substring) of the string from [start] to [end].
+  @pragma('vm:prefer-inline')
+  // ignore: unused_element
+  String slice(int start, int end) {
+    return substring(start, end);
+  }
 }
 
 class ParseError {
@@ -1067,15 +1151,13 @@ class State<T> {
 
   int pos = 0;
 
+  int start = 0;
+
   final T source;
 
   final List<int> _kinds = List.filled(150, 0);
 
   int _length = 0;
-
-  final List<int> _lengths = List.filled(150, 0);
-
-  final List<_Memo?> _memos = List.filled(150, null);
 
   final List<int> _starts = List.filled(150, 0);
 
@@ -1086,7 +1168,7 @@ class State<T> {
   List<ParseError> get errors => _buildErrors();
 
   @pragma('vm:prefer-inline')
-  void fail(int pos, int kind, int length, Object? value, [int start = -1]) {
+  void fail(int pos, int kind, [Object? value, int start = -1]) {
     if (log) {
       if (errorPos <= pos && minErrorPos <= pos) {
         if (errorPos < pos) {
@@ -1095,7 +1177,6 @@ class State<T> {
         }
 
         _kinds[_length] = kind;
-        _lengths[_length] = length;
         _starts[_length] = start;
         _values[_length] = value;
         _length++;
@@ -1105,20 +1186,6 @@ class State<T> {
         lastErrorPos = pos;
       }
     }
-  }
-
-  @pragma('vm:prefer-inline')
-  void memoize<R>(int id, bool fast, int start, [R? result]) =>
-      _memos[id] = _Memo<R>(id, fast, start, pos, ok, result);
-
-  @pragma('vm:prefer-inline')
-  _Memo<R>? memoized<R>(int id, bool fast, int start) {
-    final memo = _memos[id];
-    return (memo != null &&
-            memo.start == start &&
-            (memo.fast == fast || !memo.fast))
-        ? memo as _Memo<R>
-        : null;
   }
 
   @pragma('vm:prefer-inline')
@@ -1170,25 +1237,28 @@ class State<T> {
       result.add(error);
     }
 
+    int max(int x, int y) => x > y ? x : y;
+    int min(int x, int y) => x < y ? x : y;
     for (var i = 0; i < _length; i++) {
       final kind = _kinds[i];
-      final length = _lengths[i];
       var value = _values[i];
       var start = _starts[i];
       if (start < 0) {
         start = errorPos;
       }
 
-      final end = start + (length > 0 ? length - 1 : 0);
+      final end = max(start, errorPos);
+      start = min(start, errorPos);
       switch (kind) {
         case ParseError.character:
           if (source is String) {
             final string = source as String;
             if (start < string.length) {
-              value = string.runeAt(errorPos);
+              final value = string.runeAt(errorPos);
+              final length = value >= 0xffff ? 2 : 1;
               final escaped = _escape(value);
-              final error =
-                  ParseError(errorPos, errorPos, 'Unexpected $escaped');
+              final error = ParseError(
+                  errorPos, errorPos + length, 'Unexpected $escaped');
               result.add(error);
             } else {
               final error = ParseError(errorPos, errorPos, "Unexpected 'EOF'");
@@ -1250,76 +1320,6 @@ class State<T> {
       result = "'$result'";
     }
 
-    return result;
-  }
-}
-
-extension on String {
-  @pragma('vm:prefer-inline')
-  // ignore: unused_element
-  int readRune(State<String> state) {
-    final w1 = codeUnitAt(state.pos++);
-    if (w1 > 0xd7ff && w1 < 0xe000) {
-      if (state.pos < length) {
-        final w2 = codeUnitAt(state.pos++);
-        if ((w2 & 0xfc00) == 0xdc00) {
-          return 0x10000 + ((w1 & 0x3ff) << 10) + (w2 & 0x3ff);
-        }
-
-        state.pos--;
-      }
-
-      throw FormatException('Invalid UTF-16 character', this, state.pos - 1);
-    }
-
-    return w1;
-  }
-
-  @pragma('vm:prefer-inline')
-  // ignore: unused_element
-  int runeAt(int index) {
-    final w1 = codeUnitAt(index++);
-    if (w1 > 0xd7ff && w1 < 0xe000) {
-      if (index < length) {
-        final w2 = codeUnitAt(index);
-        if ((w2 & 0xfc00) == 0xdc00) {
-          return 0x10000 + ((w1 & 0x3ff) << 10) + (w2 & 0x3ff);
-        }
-      }
-
-      throw FormatException('Invalid UTF-16 character', this, index - 1);
-    }
-
-    return w1;
-  }
-
-  /// Returns a slice (substring) of the string from [start] to [end].
-  @pragma('vm:prefer-inline')
-  // ignore: unused_element
-  String slice(int start, int end) {
-    return substring(start, end);
-  }
-}
-
-class _Memo<T> {
-  final int end;
-
-  final bool fast;
-
-  final int id;
-
-  final bool ok;
-
-  final T? result;
-
-  final int start;
-
-  _Memo(this.id, this.fast, this.start, this.end, this.ok, this.result);
-
-  @pragma('vm:prefer-inline')
-  T? restore(State state) {
-    state.ok = ok;
-    state.pos = end;
     return result;
   }
 }
