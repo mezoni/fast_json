@@ -16,7 +16,7 @@ Currently contains the following parsers:
 
 - Classic parser. Slightly slower than Dart SDK but with better error reporting system
 - Classic parser with `BigNum` support. No restrictions on the size of integers
-- Classic parser with `JavaScript` support. With restrictions on the size of integers
+- Classic parser with `JavaScript` support. It parses very slowly in a web browser and quite fast in a non-browser. Not optimized for parsing numbers (uses pure Dart `num.parse()`)
 - Parser-handler. Event-based parser. A synchronous parser that does not store the results of the parsing, but instead invokes an event handler. Useful for reading data with filtering
 - Parser-selector. Event-based parser. Implemented using parser-handler. Simplifies data selection with just one event
 

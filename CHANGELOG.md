@@ -1,6 +1,6 @@
 ## 0.1.10
 
-- Implemented and tested parser with `JavaScript` support
+- Implemented and tested parser with `JavaScript` support. It parses very slowly in a web browser and quite fast in a non-browser. Not optimized for parsing numbers
 
 ## 0.1.9
 
