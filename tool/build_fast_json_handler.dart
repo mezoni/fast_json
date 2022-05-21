@@ -1,5 +1,4 @@
 import 'package:parser_builder/branch.dart';
-import 'package:parser_builder/builder_helper.dart' as helper;
 import 'package:parser_builder/bytes.dart';
 import 'package:parser_builder/char_class.dart';
 import 'package:parser_builder/character.dart';
@@ -37,8 +36,6 @@ enum JsonHandlerEvent {
 ''';
 
 const __header = r'''
-import 'package:source_span/source_span.dart';
-
 dynamic parse(String source, JsonParserHandler handler) {
   final state = State(source);
   state.context = handler;

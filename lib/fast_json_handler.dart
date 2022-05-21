@@ -1,5 +1,3 @@
-import 'package:source_span/source_span.dart';
-
 dynamic parse(String source, JsonParserHandler handler) {
   final state = State(source);
   state.context = handler;
