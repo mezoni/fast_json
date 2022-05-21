@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:fast_json/fast_json_big_int.dart' as big_int;
+import 'package:fast_json/fast_json_web.dart' as web;
 import 'package:fast_json/fast_json_handler.dart' as parser_handler;
 import 'package:fast_json/fast_json_handler.dart'
     show JsonHandlerEvent, JsonParserHandler;
@@ -12,10 +13,12 @@ import 'package:test/scaffolding.dart';
 void main(List<String> args) {
   _testHandler();
   _testParserBigInt();
+  _testParserWeb();
   _testSelector();
 }
 
-const _data = '''
+const _data =
+    '''
 [
   {
     "id": 1,
@@ -460,6 +463,81 @@ _testParserBigInt() async {
     {
       final source = ' -123e-2 ';
       final result = big_int.parse(source);
+      expect(result, -123E-2);
+    }
+  });
+}
+
+_testParserWeb() async {
+  test('JSON parser for wev', () {
+    {
+      final source = ' -10 ';
+      final result = web.parse(source);
+      expect('$result', BigInt.parse(source).toString());
+    }
+    {
+      final source = ' 10 ';
+      final result = web.parse(source);
+      expect('$result', BigInt.parse(source).toString());
+    }
+    {
+      final source = ' 0 ';
+      final result = web.parse(source);
+      expect('$result', BigInt.parse(source).toString());
+    }
+    {
+      final source = ' 1.0 ';
+      final result = web.parse(source);
+      expect(result, 1.0);
+    }
+    {
+      final source = ' -1.0 ';
+      final result = web.parse(source);
+      expect(result, -1.0);
+    }
+    {
+      final source = ' -123.456 ';
+      final result = web.parse(source);
+      expect(result, -123.456);
+    }
+    {
+      final source = ' -123.456E2 ';
+      final result = web.parse(source);
+      expect(result, -123.456E2);
+    }
+    {
+      final source = ' -123.456e2 ';
+      final result = web.parse(source);
+      expect(result, -123.456E2);
+    }
+    {
+      final source = ' -123.456e+2 ';
+      final result = web.parse(source);
+      expect(result, -123.456E2);
+    }
+    {
+      final source = ' -123.456e-2 ';
+      final result = web.parse(source);
+      expect(result, -123.456E-2);
+    }
+    {
+      final source = ' -123E2 ';
+      final result = web.parse(source);
+      expect(result, -123E2);
+    }
+    {
+      final source = ' -123e2 ';
+      final result = web.parse(source);
+      expect(result, -123E2);
+    }
+    {
+      final source = ' -123e+2 ';
+      final result = web.parse(source);
+      expect(result, -123E2);
+    }
+    {
+      final source = ' -123e-2 ';
+      final result = web.parse(source);
       expect(result, -123E-2);
     }
   });

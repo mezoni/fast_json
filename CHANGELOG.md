@@ -1,3 +1,7 @@
+## 0.1.10
+
+- Implemented and tested parser with `JavaScript` support
+
 ## 0.1.9
 
 - Implemented and tested parser with `BigInt` support
