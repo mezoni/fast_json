@@ -1,3 +1,7 @@
+## 0.1.11
+
+- After updates of the `parser builder`, changes were made to the classic parser builders to generate faster parsers
+
 ## 0.1.10
 
 - Implemented and tested parser with `JavaScript` support. It parses very slowly in a web browser and quite fast in a non-browser. Not optimized for parsing numbers

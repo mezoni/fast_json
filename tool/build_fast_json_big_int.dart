@@ -154,7 +154,7 @@ const _string = Named<String, String>(
             Alt2(
               _quote,
               FailMessage(
-                  FailPos.lastErrorPos, 'Unterminated string', FailPos.start),
+                  StatePos.lastErrorPos, 'Unterminated string', StatePos.start),
             )))));
 
 const _stringValue = StringValue(_isNormalChar, 0x5c, _escaped);

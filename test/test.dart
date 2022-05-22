@@ -17,7 +17,8 @@ void main(List<String> args) {
   _testSelector();
 }
 
-const _data = '''
+const _data =
+    '''
 [
   {
     "id": 1,
@@ -468,7 +469,7 @@ _testParserBigInt() async {
 }
 
 _testParserWeb() async {
-  test('JSON parser for wev', () {
+  test('JSON parser for web', () {
     {
       final source = ' -10 ';
       final result = web.parse(source);

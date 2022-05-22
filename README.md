@@ -2,7 +2,7 @@
 
 Collection of JSON parsers. Classic parser (also with BigNum support), event-based parser. Pretty quick parsing.
 
-Version: 0.1.10
+Version: 0.1.11
 
 This software also demonstrates in practice how you can generate high-performance parsers with minimal memory consumption using [`parser_builder`](https://pub.dev/packages/parser_builder).  
 Creating a fast parser is very easy.  
@@ -34,11 +34,12 @@ import 'package:fast_json/fast_json_selector.dart' show JsonSelectorEvent;
 void main(List<String> args) {
   {
     // Show how levels are organized
-    void handle(JsonSelectorEvent event) {
-      print('${event.levels.length}: ${event.levels.join(' ')}');
+    void select(JsonSelectorEvent event) {
+      print('Level: ${event.levels.length}: ${event.levels.join(' ')}');
+      print('Index: ${event.index}');
     }
 
-    parser.parse(_data, select: handle);
+    parser.parse(_data, select: select);
   }
 
   {
@@ -60,6 +61,37 @@ void main(List<String> args) {
     }
 
     parser.parse(_data, select: select);
+    print(users.join(', '));
+  }
+
+  {
+    // Select users from the list by indexes [2..3] and terminate selection
+    final users = <User>[];
+    final level = '{} data [] 0 {}'.split(' ').length;
+    void select(JsonSelectorEvent event) {
+      final levels = event.levels;
+      if (levels.length == level) {
+        final index = event.index;
+        if (index >= 2 && index <= 3) {
+          final map = event.lastValue as Map;
+          final user = User.fromJson(map);
+          users.add(user);
+        }
+
+        // Free up memory
+        event.lastValue = null;
+        if (users.length == 2) {
+          throw const _TerminateException();
+        }
+      }
+    }
+
+    try {
+      parser.parse(_data, select: select);
+    } on _TerminateException {
+      //
+    }
+
     print(users.join(', '));
   }
 
@@ -118,30 +150,6 @@ void main(List<String> args) {
 
     parser.parse(_data, select: select);
     print(companies.join(', '));
-  }
-
-  {
-    // Select users [2..4]
-    final users = <User>[];
-    final level = '{} data [] 0 {}'.split(' ').length;
-    final elementLevel = '{} data [] 0'.split(' ').length;
-    void select(JsonSelectorEvent event) {
-      final levels = event.levels;
-      if (levels.length == level) {
-        final index = event.levels[elementLevel - 1] as int;
-        if (index >= 2 && index <= 4) {
-          final map = event.lastValue as Map;
-          final user = User.fromJson(map);
-          users.add(user);
-        }
-
-        // Free up memory
-        event.lastValue = null;
-      }
-    }
-
-    parser.parse(_data, select: select);
-    print(users.join(', '));
   }
 }
 
@@ -303,6 +311,10 @@ class User {
       name: json['name'] as String,
     );
   }
+}
+
+class _TerminateException {
+  const _TerminateException();
 }
 
 ```
