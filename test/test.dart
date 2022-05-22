@@ -17,8 +17,7 @@ void main(List<String> args) {
   _testSelector();
 }
 
-const _data =
-    '''
+const _data = '''
 [
   {
     "id": 1,
