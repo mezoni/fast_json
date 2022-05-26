@@ -1,3 +1,7 @@
+## 0.1.12
+
+- The grammars have been modified to take advantage of the new `parser builder` features
+
 ## 0.1.11
 
 - After updates of the `parser builder`, changes were made to the classic parser builders to generate faster parsers

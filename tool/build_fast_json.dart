@@ -7,6 +7,7 @@ import 'package:parser_builder/error.dart';
 import 'package:parser_builder/fast_build.dart';
 import 'package:parser_builder/multi.dart';
 import 'package:parser_builder/parser_builder.dart';
+import 'package:parser_builder/semantic_value.dart';
 import 'package:parser_builder/sequence.dart';
 import 'package:parser_builder/string.dart';
 
@@ -117,13 +118,16 @@ const _string = Named<String, String>(
     '_string',
     Nested(
         'string',
-        WithStartAndLastErrorPos(Delimited(
-            Tag('"'),
+        HandleLastErrorPos(Delimited(
+            StartPositionToValue('start', Tag('"')),
             _stringValue,
             Alt2(
               _quote,
               FailMessage(
-                  StatePos.lastErrorPos, 'Unterminated string', StatePos.start),
+                LastErrorPositionAction(),
+                'Unterminated string',
+                FromValueAction('start'),
+              ),
             )))));
 
 const _stringValue = StringValue(_isNormalChar, 0x5c, _escaped);
@@ -144,13 +148,13 @@ const _value_ = Named(
             null: _number,
           },
           [
-            FailExpected(StatePos.pos, 'string'),
-            FailExpected(StatePos.pos, '['),
-            FailExpected(StatePos.pos, '}'),
-            FailExpected(StatePos.pos, 'false'),
-            FailExpected(StatePos.pos, 'true'),
-            FailExpected(StatePos.pos, 'null'),
-            FailExpected(StatePos.pos, 'number'),
+            FailExpected(PositionAction(), 'string'),
+            FailExpected(PositionAction(), '['),
+            FailExpected(PositionAction(), '}'),
+            FailExpected(PositionAction(), 'false'),
+            FailExpected(PositionAction(), 'true'),
+            FailExpected(PositionAction(), 'null'),
+            FailExpected(PositionAction(), 'number'),
           ],
         ),
         _ws));

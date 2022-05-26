@@ -119,6 +119,7 @@ dynamic _json(State<String> state) {
 int? _escapeHex(State<String> state) {
   int? $0;
   final source = state.source;
+  int? $2;
   final $pos = state.pos;
   state.ok = state.pos < source.length;
   if (state.ok) {
@@ -127,45 +128,53 @@ int? _escapeHex(State<String> state) {
     if (state.ok) {
       state.pos++;
     } else {
-      state.fail(state.pos, ParseError.character, null);
+      state.fail(state.pos, ParseError.character);
     }
   } else {
-    state.fail(state.pos, ParseError.character, null);
+    state.fail(state.pos, ParseError.character);
   }
   if (state.ok) {
     String? $1;
-    final $pos2 = state.start;
-    state.start = state.pos;
-    final $pos3 = state.setLastErrorPos(-1);
-    final $pos4 = state.pos;
-    var $count = 0;
-    while ($count < 4 && state.pos < source.length) {
-      final c = source.codeUnitAt(state.pos);
-      final ok = c <= 70
-          ? c <= 57
-              ? c >= 48
-              : c >= 65
-          : c <= 102 && c >= 97;
-      if (!ok) {
-        break;
-      }
-      state.pos++;
-      $count++;
-    }
-    state.ok = $count >= 4;
+    final $pos2 = state.setLastErrorPos(-1);
+    final $pos3 = state.pos;
+    state.ok = true;
+    $2 = state.pos;
     if (state.ok) {
-      $1 = source.substring($pos4, state.pos);
-    } else {
-      state.fail(state.pos, ParseError.character, null);
-      state.pos = $pos4;
+      final $pos4 = state.pos;
+      var $count = 0;
+      while ($count < 4 && state.pos < source.length) {
+        final c = source.codeUnitAt(state.pos);
+        final ok = c <= 70
+            ? c <= 57
+                ? c >= 48
+                : c >= 65
+            : c <= 102 && c >= 97;
+        if (!ok) {
+          break;
+        }
+        state.pos++;
+        $count++;
+      }
+      state.ok = $count >= 4;
+      if (state.ok) {
+        $1 = source.substring($pos4, state.pos);
+      } else {
+        state.fail(state.pos, ParseError.character);
+        state.pos = $pos4;
+      }
+      if (!state.ok) {
+        state.pos = $pos3;
+      }
     }
     if (!state.ok) {
-      state.fail(state.lastErrorPos, ParseError.message,
+      state.fail(
+          state.lastErrorPos,
+          ParseError.message,
           'An escape sequence starting with \'\\u\' must be followed by 4 hexadecimal digits',
-          start: state.start);
+          State.as<int>($2),
+          state.lastErrorPos);
     }
-    state.restoreLastErrorPos($pos3);
-    state.start = $pos2;
+    state.restoreLastErrorPos($pos2);
     if (state.ok) {
       final v1 = $1!;
       $0 = _toHexValue(v1);
@@ -211,10 +220,10 @@ int? _escaped(State<String> state) {
       state.pos++;
       $0 = v;
     } else {
-      state.fail(state.pos, ParseError.character, null);
+      state.fail(state.pos, ParseError.character);
     }
   } else {
-    state.fail(state.pos, ParseError.character, null);
+    state.fail(state.pos, ParseError.character);
   }
   if (!state.ok) {
     $0 = _escapeHex(state);
@@ -243,12 +252,12 @@ void _quote(State<String> state) {
 String? _string(State<String> state) {
   String? $0;
   final source = state.source;
+  int? $start;
   final $pos = state.minErrorPos;
   state.minErrorPos = state.pos + 1;
-  final $pos1 = state.start;
-  state.start = state.pos;
-  final $pos2 = state.setLastErrorPos(-1);
-  final $pos3 = state.pos;
+  final $pos1 = state.setLastErrorPos(-1);
+  final $pos2 = state.pos;
+  $start = state.pos;
   state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 34;
   if (state.ok) {
     state.pos += 1;
@@ -258,11 +267,11 @@ String? _string(State<String> state) {
   if (state.ok) {
     String? $1;
     state.ok = true;
-    final $pos4 = state.pos;
+    final $pos3 = state.pos;
     final $list = <String>[];
     var $str = '';
     while (state.pos < source.length) {
-      final $start = state.pos;
+      final $start1 = state.pos;
       var $c = 0;
       while (state.pos < source.length) {
         final pos = state.pos;
@@ -277,7 +286,7 @@ String? _string(State<String> state) {
           break;
         }
       }
-      $str = state.pos == $start ? '' : source.substring($start, state.pos);
+      $str = state.pos == $start1 ? '' : source.substring($start1, state.pos);
       if ($str != '' && $list.isNotEmpty) {
         $list.add($str);
       }
@@ -288,7 +297,7 @@ String? _string(State<String> state) {
       int? $2;
       $2 = _escaped(state);
       if (!state.ok) {
-        state.pos = $pos4;
+        state.pos = $pos3;
         break;
       }
       if ($list.isEmpty && $str != '') {
@@ -310,18 +319,16 @@ String? _string(State<String> state) {
     if (state.ok) {
       _quote(state);
       if (!state.ok) {
-        state.fail(
-            state.lastErrorPos, ParseError.message, 'Unterminated string',
-            start: state.start);
+        state.fail(state.lastErrorPos, ParseError.message,
+            'Unterminated string', State.as<int>($start));
       }
     }
     if (!state.ok) {
       $0 = null;
-      state.pos = $pos3;
+      state.pos = $pos2;
     }
   }
-  state.restoreLastErrorPos($pos2);
-  state.start = $pos1;
+  state.restoreLastErrorPos($pos1);
   state.minErrorPos = $pos;
   if (!state.ok) {
     state.fail(state.pos, ParseError.expected, 'string');
@@ -1146,15 +1153,13 @@ class State<T> {
 
   int pos = 0;
 
-  int start = 0;
-
   final T source;
+
+  final List<int> _ends = List.filled(150, 0);
 
   final List<int> _kinds = List.filled(150, 0);
 
   int _length = 0;
-
-  final List<int> _lengths = List.filled(150, 0);
 
   final List<int> _starts = List.filled(150, 0);
 
@@ -1165,8 +1170,7 @@ class State<T> {
   List<ParseError> get errors => _buildErrors();
 
   @pragma('vm:prefer-inline')
-  void fail(int pos, int kind, Object? value,
-      {int length = -1, int start = -1}) {
+  void fail(int pos, int kind, [Object? value, int start = -1, int end = -1]) {
     ok = false;
     if (log) {
       if (errorPos <= pos && minErrorPos <= pos) {
@@ -1175,8 +1179,8 @@ class State<T> {
           _length = 0;
         }
 
+        _ends[_length] = end;
         _kinds[_length] = kind;
-        _lengths[_length] = length;
         _starts[_length] = start;
         _values[_length] = value;
         _length++;
@@ -1220,36 +1224,19 @@ class State<T> {
   }
 
   List<ParseError> _buildErrors() {
-    int max(int x, int y) => x > y ? x : y;
-
-    int min(int x, int y) => x < y ? x : y;
-
-    int getStart(int index) {
-      var start = _starts[index];
+    var start = 0;
+    var end = 0;
+    void calculate(int index) {
+      start = _starts[index];
       if (start < 0) {
         start = errorPos;
+        end = start;
+      } else {
+        end = _ends[index];
+        if (end < start) {
+          end = start;
+        }
       }
-
-      start = min(start, errorPos);
-      return start;
-    }
-
-    int getEnd(int index) {
-      start = getStart(index);
-      var end = _starts[index];
-      if (end < 0) {
-        end = errorPos;
-      }
-
-      end = max(end, errorPos);
-      end = max(end, start);
-      start = min(start, end);
-      final length = _lengths[index];
-      if (length >= 0) {
-        end = start + length;
-      }
-
-      return end;
     }
 
     final result = <ParseError>[];
@@ -1257,8 +1244,8 @@ class State<T> {
     for (var i = 0; i < _length; i++) {
       final kind = _kinds[i];
       if (kind == ParseError.expected) {
+        calculate(i);
         final value = _values[i];
-        final start = getStart(i);
         var list = expected[start];
         if (list == null) {
           list = [];
@@ -1271,14 +1258,13 @@ class State<T> {
 
     for (final start in expected.keys) {
       final values = expected[start]!.toSet().map((e) => _escape(e));
-      final text = 'Expected: ${values.join(', ')}';
+      final text = 'Expecting: ${values.join(', ')}';
       final error = ParseError(start, start, text);
       result.add(error);
     }
 
     for (var i = 0; i < _length; i++) {
-      final start = getStart(i);
-      final end = getEnd(i);
+      calculate(i);
       final value = _values[i];
       final kind = _kinds[i];
       switch (kind) {
@@ -1353,6 +1339,8 @@ class State<T> {
 
     return result;
   }
+
+  static T as<T>(T? value) => value as T;
 }
 
 abstract class JsonParserHandler {
